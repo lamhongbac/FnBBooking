@@ -1,0 +1,367 @@
+@page "/area-manager"
+
+<PageTitle>Quản Lý Khu Vực - FnBBooking</PageTitle>
+
+<!-- [ Header & Action ] start -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h4 class="mb-1 text-primary d-flex align-items-center">
+                    <i class="ti ti-building me-2 fs-3"></i> Quản Lý Khu Vực
+                </h4>
+                <p class="text-muted mb-0">Quản lý danh mục khu vực bàn ăn, sảnh tiệc và phòng VIP nhà hàng.</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" @onclick="() => areaModal?.ShowCreate()">
+                    <i class="ti ti-plus me-1"></i> Thêm Khu Vực Mới
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Header & Action ] end -->
+
+<!-- [ Alert Feedback ] start -->
+@if (!string.IsNullOrEmpty(alertMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="ti ti-circle-check me-2 fs-5 align-middle"></i> @alertMessage
+        <button type="button" class="btn-close" @onclick="() => alertMessage = null"></button>
+    </div>
+}
+<!-- [ Alert Feedback ] end -->
+
+<!-- [ Filter & Search Toolbar ] start -->
+<div class="card mb-3">
+    <div class="card-body py-3">
+        <div class="row g-2 align-items-center">
+            <!-- Ô nhập từ khóa tìm kiếm (Text Search) -->
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="ti ti-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Tìm theo mã hoặc tên khu vực..."
+                           @bind="searchTerm" @onkeyup="HandleKeyUp" />
+                    @if (!string.IsNullOrWhiteSpace(searchTerm))
+                    {
+                        <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch" title="Xóa từ khóa">
+                            <i class="ti ti-x"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Dropdown lọc trạng thái (Status Filter) -->
+            <div class="col-md-3">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="text-muted small text-nowrap mb-0">Trạng thái:</label>
+                    <select class="form-select" @bind="selectedStatus">
+                        <option value="All">Tất cả trạng thái</option>
+                        <option value="Active">Đang hoạt động</option>
+                        <option value="Inactive">Ngừng hoạt động</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Nút Tìm kiếm (Query / Refresh data với tất cả parameters) -->
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" type="button" @onclick="DoSearch">
+                    <i class="ti ti-search me-1"></i> Tìm kiếm
+                </button>
+            </div>
+
+            <!-- Tổng số bản ghi tìm thấy -->
+            <div class="col-md-2 text-md-end text-muted small">
+                @if (pageController != null)
+                {
+                    <span>Tổng: <strong>@pageController.PagingInfo.TotalItems</strong> khu vực</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Filter & Search Toolbar ] end -->
+
+<!-- [ Master Data Table with Sorting & Paging ] start -->
+<div class="card tbl-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 50px;" class="text-center">STT</th>
+                        <th @onclick='() => SortBy("Number")' style="cursor: pointer; width: 160px;">
+                            MÃ KHU VỰC <i class="@GetSortIcon("Number")"></i>
+                        </th>
+                        <th @onclick='() => SortBy("Name")' style="cursor: pointer; width: 230px;">
+                            TÊN KHU VỰC <i class="@GetSortIcon("Name")"></i>
+                        </th>
+                        <th @onclick='() => SortBy("TableCount")' style="cursor: pointer; width: 110px;" class="text-center">
+                            SỐ BÀN <i class="@GetSortIcon("TableCount")"></i>
+                        </th>
+                        <th>MÔ TẢ</th>
+                        <th style="width: 130px;" class="text-center">TRẠNG THÁI</th>
+                        <th @onclick='() => SortBy("ModifiedOn")' style="cursor: pointer; width: 180px;">
+                            CẬP NHẬT CUỐI <i class="@GetSortIcon("ModifiedOn")"></i>
+                        </th>
+                        <th style="width: 110px;" class="text-center">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (pageController?.CurrentPageData == null || !pageController.CurrentPageData.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="ti ti-folder-off fs-1 d-block mb-2"></i>
+                                Không tìm thấy khu vực nào phù hợp với điều kiện tìm kiếm.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        var startIndex = (pageController.PagingInfo.CurrentPage - 1) * pageController.PagingInfo.PageSize;
+                        for (int i = 0; i < pageController.CurrentPageData.Count; i++)
+                        {
+                            var item = pageController.CurrentPageData[i];
+                            var index = startIndex + i + 1;
+                            <tr>
+                                <td class="text-center text-muted">@index</td>
+                                <td>
+                                    <span class="badge bg-light-primary text-primary fw-bold font-monospace">@item.Number</span>
+                                </td>
+                                <td>
+                                    <strong class="text-dark">@item.Name</strong>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light-info text-info fs-6 px-2">@item.TableCount bàn</span>
+                                </td>
+                                <td>
+                                    <span class="text-muted text-truncate d-inline-block" style="max-width: 320px;" title="@item.Description">
+                                        @(string.IsNullOrEmpty(item.Description) ? "—" : item.Description)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-light-success text-success">
+                                            <i class="ti ti-check me-1"></i> Hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light-secondary text-muted">
+                                            <i class="ti ti-ban me-1"></i> Tạm khóa
+                                        </span>
+                                    }
+                                </td>
+                                <td class="small text-muted">
+                                    <div><i class="ti ti-user me-1"></i> @item.ModifiedBy</div>
+                                    <div class="text-nowrap"><i class="ti ti-clock me-1"></i> @item.ModifiedOn.ToString("dd/MM/yyyy HH:mm")</div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" title="Chỉnh sửa" @onclick="() => areaModal?.ShowEdit(item)">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="Xóa" @onclick="() => ConfirmDelete(item)">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- [ Pagination Component ] -->
+        @if (pageController != null)
+        {
+            <div class="px-3 pb-3">
+                <PaginationComponent currentPage="@pageController.PagingInfo.CurrentPage"
+                                     totalPages="@pageController.PagingInfo.TotalPages"
+                                     totalItems="@pageController.PagingInfo.TotalItems"
+                                     pageSize="@pageSize"
+                                     OnPageChanged="HandlePageChange"
+                                     OnPageSizeChanged="HandlePageSizeChange" />
+            </div>
+        }
+    </div>
+</div>
+<!-- [ Master Data Table with Sorting & Paging ] end -->
+
+<!-- [ Reusable Add/Edit Modal Component ] -->
+<AreaModal @ref="areaModal" OnSaved="HandleAreaSaved" />
+
+<!-- [ Delete Confirmation Modal ] start -->
+@if (deletingItem != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1056;" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title text-danger d-flex align-items-center">
+                        <i class="ti ti-alert-triangle me-2 fs-4"></i> Xác Nhận Xóa Khu Vực
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => deletingItem = null"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="mb-2">Bạn có chắc chắn muốn xóa khu vực sau đây?</p>
+                    <div class="p-3 bg-light rounded border">
+                        <div><strong>Mã:</strong> <span class="font-monospace text-primary">@deletingItem.Number</span></div>
+                        <div><strong>Tên:</strong> @deletingItem.Name</div>
+                        <div><strong>Số bàn đang có:</strong> @deletingItem.TableCount bàn</div>
+                    </div>
+                    <small class="text-danger mt-2 d-block">
+                        <i class="ti ti-info-circle me-1"></i> Dữ liệu sẽ được đánh dấu xóa mềm (IsDeleted = true).
+                    </small>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="() => deletingItem = null">
+                        Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" @onclick="ExecuteDelete">
+                        <i class="ti ti-trash me-1"></i> Xóa Khu Vực
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<!-- [ Delete Confirmation Modal ] end -->
+
+@code {
+    private AreaModal? areaModal;
+    private List<AreaViewModel> allItems = new();
+    private PageAreaController? pageController;
+
+    private string searchTerm = string.Empty;
+    private string selectedStatus = "All";
+    private int pageSize = 10;
+    private string? alertMessage;
+    private AreaViewModel? deletingItem;
+
+    protected override void OnInitialized()
+    {
+        allItems = AreaViewModel.CreateSampleList();
+
+        var sortModel = new SortModel();
+        sortModel.AddColumn("Number", isDefaultColumn: true);
+        sortModel.AddColumn("Name");
+        sortModel.AddColumn("TableCount");
+        sortModel.AddColumn("ModifiedOn");
+
+        var filterDict = new Dictionary<string, object>
+        {
+            { FilterKey.SearchKeyword, searchTerm },
+            { FilterKey.Status, selectedStatus }
+        };
+
+        pageController = new PageAreaController(allItems, sortModel, filterDict, 1, pageSize);
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            DoSearch();
+        }
+    }
+
+    private void DoSearch()
+    {
+        if (pageController == null) return;
+        // Gom tất cả fields filter làm parameters
+        pageController.FilterObject[FilterKey.SearchKeyword] = searchTerm;
+        pageController.FilterObject[FilterKey.Status] = selectedStatus;
+        pageController.Filter();
+        pageController.SetupPage(1);
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        DoSearch();
+    }
+
+    private void SortBy(string prop)
+    {
+        if (pageController == null) return;
+        pageController.PageSortModel.ApplySort(prop);
+        pageController.DoSort();
+        pageController.SetupPage(pageController.PagingInfo.CurrentPage);
+    }
+
+    private string GetSortIcon(string prop)
+    {
+        if (pageController?.PageSortModel == null)
+            return "ti ti-arrows-sort text-muted ms-1";
+
+        if (!string.Equals(pageController.PageSortModel.SortedProperty, prop, StringComparison.OrdinalIgnoreCase))
+            return "ti ti-arrows-sort text-muted ms-1";
+
+        return pageController.PageSortModel.SortedOrder == SortOrder.Ascending
+            ? "ti ti-sort-ascending text-primary ms-1"
+            : "ti ti-sort-descending text-primary ms-1";
+    }
+
+    private void HandlePageChange(int page)
+    {
+        pageController?.GoToPage(page);
+    }
+
+    private void HandlePageSizeChange(int newSize)
+    {
+        pageSize = newSize;
+        pageController?.ChangePageSize(newSize);
+    }
+
+    private void HandleAreaSaved(AreaViewModel savedItem)
+    {
+        if (savedItem.Id == 0)
+        {
+            // Add new
+            savedItem.Id = allItems.Any() ? allItems.Max(a => a.Id) + 1 : 1;
+            allItems.Insert(0, savedItem);
+            alertMessage = $"Đã thêm mới khu vực \"{savedItem.Name}\" thành công!";
+        }
+        else
+        {
+            // Update
+            var index = allItems.FindIndex(a => a.Id == savedItem.Id);
+            if (index >= 0)
+            {
+                allItems[index] = savedItem;
+                alertMessage = $"Đã cập nhật khu vực \"{savedItem.Name}\" thành công!";
+            }
+        }
+
+        if (pageController != null)
+        {
+            pageController.AllItems = allItems;
+            pageController.RefreshPage();
+        }
+    }
+
+    private void ConfirmDelete(AreaViewModel item)
+    {
+        deletingItem = item;
+    }
+
+    private void ExecuteDelete()
+    {
+        if (deletingItem != null)
+        {
+            deletingItem.IsDeleted = true;
+            alertMessage = $"Đã xóa khu vực \"{deletingItem.Name}\" thành công!";
+            deletingItem = null;
+
+            if (pageController != null)
+            {
+                pageController.AllItems = allItems;
+                pageController.RefreshPage();
+            }
+        }
+    }
+}

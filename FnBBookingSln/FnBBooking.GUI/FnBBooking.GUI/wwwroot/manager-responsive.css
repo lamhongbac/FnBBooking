@@ -1,0 +1,193 @@
+/* ================================================================
+   Manager Pages — Responsive shared styles
+   Import vào app.css hoặc MainLayout.razor:
+   <link rel="stylesheet" href="css/manager-responsive.css" />
+   ================================================================ */
+
+/* ── Page header ── */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.page-header h3 {
+    margin: 0;
+}
+
+.page-header .header-actions {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+
+/* ── Filter bar card (date range) ── */
+.filter-card {
+    background: linear-gradient(135deg, #f8f9fc 0%, #eef2f7 100%);
+    border: 0;
+    border-radius: .5rem;
+    padding: .75rem 1rem;
+    margin-bottom: .75rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+}
+
+/* ── Filter row ── */
+.filter-row {
+    margin-bottom: .75rem;
+}
+
+.filter-row .form-label {
+    font-size: .8rem;
+    font-weight: 600;
+    margin-bottom: .25rem;
+}
+
+/* ── Mobile collapse panel ── */
+.filter-panel-mobile {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: .5rem;
+    padding: .75rem;
+    margin-top: .5rem;
+}
+
+.filter-toggle-btn {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.filter-active-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0d6efd;
+    border: 1px solid #fff;
+}
+
+/* ── Table ── */
+.mgr-table {
+    margin-bottom: 0;
+}
+
+.mgr-table thead th {
+    font-size: .78rem;
+    font-weight: 700;
+    /*        text-transform: uppercase;*/
+    letter-spacing: .03em;
+    white-space: nowrap;
+    vertical-align: middle;
+    background: #f1f4f9;
+}
+
+.mgr-table tbody td {
+    vertical-align: middle;
+    font-size: .875rem;
+}
+
+.mgr-table .action-cell {
+    white-space: nowrap;
+}
+
+.mgr-table .action-cell .btn {
+    padding: .2rem .45rem;
+}
+
+/* Cột ít nội dung — co lại vừa đủ */
+.mgr-table .col-shrink {
+    width: 1px;
+    white-space: nowrap;
+}
+
+/* ── Info stacked (name + sub) ── */
+.info-stack .main {
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.info-stack .sub {
+    font-size: .75rem;
+    color: #6c757d;
+}
+
+/* ── Date stacked ── */
+.date-stack .date {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.date-stack .time {
+    font-size: .75rem;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+/* ── Mobile: stack rows inside a card ── */
+@media (max-width: 767.98px) {
+
+    /* Hide less important columns on mobile */
+    .mgr-table .col-hide-mobile {
+        display: none;
+    }
+
+    /* Make action buttons more tappable */
+    .mgr-table .action-cell .btn {
+        padding: .3rem .55rem;
+        font-size: .85rem;
+    }
+
+    /* Tighter table cells */
+    .mgr-table thead th,
+    .mgr-table tbody td {
+        padding: .4rem .5rem;
+    }
+
+    /* Page header stack on mobile */
+    .page-header {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .page-header h3 {
+        width: 100%;
+    }
+
+    .page-header .header-actions {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+/* ── Stats Summary Bar ── */
+.stats-card {
+    border-radius: .5rem;
+    padding: .6rem .9rem;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .07);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .10);
+}
+
+.stats-label {
+    font-size: .75rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: .1rem;
+    white-space: nowrap;
+}
+
+.stats-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.2;
+}

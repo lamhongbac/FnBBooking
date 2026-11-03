@@ -1,0 +1,9 @@
+Working Rules
+
+AI luôn đi qua 3 bước cơ bản
+
+1/AI và người dùng bắt đầu bằng thảo luận  
+2/AI lập plan
+3/AI hành động theo plan
+4/Người dùng nghiệm thu, nếu chưa xong thì tiếp tục cho đến khi xác nhận của người dùng
+

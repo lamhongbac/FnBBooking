@@ -1,0 +1,8 @@
+Chúng ta đang tiến hành viết lại ứng dụng tên là FnBBooking (Quản lý Booking cho ngành FnB) dựa theo ứng dụng đã viết trước đó
+trong thư mục ..\AppBooking (cũng là ứng dụng này nhưng cần tổ chức lại)
+Chúng ta cần đảm bảo các hình thức như logo, tông màu của ứng dụng, cấu trúc menu theo ứng dụng cũ
+Các giao diện cũng gần như giống với giao diện đã viết tuy có khác biệt chút
+Vì thế bạn cần tham khảo dự án cũ
+Việc triển khai các dự án sẽ được tiến hành lần lượt 
+từ master data đến các transaction và sẽ được dẫn dắt bởi người quản lý dự án
+

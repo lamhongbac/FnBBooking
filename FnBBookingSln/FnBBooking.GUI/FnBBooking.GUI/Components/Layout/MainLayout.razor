@@ -1,0 +1,139 @@
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
+<div class="loader-bg">
+    <div class="loader-track">
+        <div class="loader-fill"></div>
+    </div>
+</div>
+<!-- [ Pre-loader ] End -->
+
+<!-- [ Sidebar Menu ] start -->
+<nav class="pc-sidebar @(_isSidebarHide ? "pc-sidebar-hide" : "") @(_isMobileSidebarActive ? "mob-sidebar-active" : "")">
+    <NavMenu />
+    @if (_isMobileSidebarActive)
+    {
+        <div class="pc-menu-overlay" @onclick="ToggleMobileSidebar"></div>
+    }
+</nav>
+<!-- [ Sidebar Menu ] end -->
+
+<!-- [ Header Topbar ] start -->
+<header class="pc-header">
+    <div class="header-wrapper">
+        <!-- [Mobile Media Block] start -->
+        <div class="me-auto pc-mob-drp">
+            <ul class="list-unstyled">
+                <!-- ======= Menu collapse Icon ===== -->
+                <li class="pc-h-item pc-sidebar-collapse">
+                    <a href="javascript:void(0)" class="pc-head-link ms-0" id="sidebar-hide-blazor" @onclick="ToggleSidebarHide">
+                        <i class="ti ti-menu-2"></i>
+                    </a>
+                </li>
+                <li class="pc-h-item pc-sidebar-popup">
+                    <a href="javascript:void(0)" class="pc-head-link ms-0" id="mobile-collapse-blazor" @onclick="ToggleMobileSidebar">
+                        <i class="ti ti-menu-2"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- [Mobile Media Block end] -->
+
+        <div class="ms-auto">
+            <ul class="list-unstyled">
+                <li class="dropdown pc-h-item header-user-profile" @onfocusout="() => _isUserDropdownOpen = false">
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100">
+                        <a class="pc-head-link dropdown-toggle arrow-none me-0 pb-1"
+                           @onclick="ToggleUserDropdown"
+                           @onclick:preventDefault
+                           href="#"
+                           role="button"
+                           aria-haspopup="true"
+                           aria-expanded="@_isUserDropdownOpen">
+                            <img src="/lib/admin-template/images/user/avatar-2.jpg" alt="user-image" class="user-avtar">
+                            <span>@currentUserName</span>
+                        </a>
+                        @{
+                            var currentEnv = Configuration["AppConfig:CurrentEnv"]?.ToUpper() ?? "DEV";
+                            var envClass = currentEnv switch
+                            {
+                                "PROD" or "PRODUCTION" => "bg-danger",
+                                "PILOT" or "STAGING" => "bg-warning text-dark",
+                                _ => "bg-success"
+                            };
+                        }
+                        <div style="line-height: 1; margin-top: -8px; z-index: 1;">
+                            <span class="badge @envClass px-2 shadow-sm" style="font-size: 0.65rem; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px;">
+                                @currentEnv
+                            </span>
+                        </div>
+                    </div>
+                    <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown @(_isUserDropdownOpen ? "show" : "")"
+                         style="@(_isUserDropdownOpen ? "position:absolute;inset:0px 0px auto auto;margin:0px;transform:translate(0px, 45px);" : "")">
+                        <div class="dropdown-header">
+                            <div class="d-flex mb-1">
+                                <div class="flex-shrink-0">
+                                    <img src="/lib/admin-template/images/user/avatar-2.jpg" alt="user-image" class="user-avtar wid-35">
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">@currentUserName</h6>
+                                    <span>@currentUserRole</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a class="dropdown-item" style="cursor:pointer">
+                            <i class="ti ti-user"></i>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a class="dropdown-item text-danger" style="cursor:pointer">
+                            <i class="ti ti-power"></i>
+                            <span>Đăng xuất</span>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>
+<!-- [ Header ] end -->
+
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+    <div class="pc-content">
+        @Body
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+
+<Footer />
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private bool _isSidebarHide = false;
+    private bool _isMobileSidebarActive = false;
+    private bool _isUserDropdownOpen = false;
+
+    private string currentUserName = "Administrator";
+    private string currentUserRole = "Super Admin";
+
+    private void ToggleSidebarHide()
+    {
+        _isSidebarHide = !_isSidebarHide;
+    }
+
+    private void ToggleMobileSidebar()
+    {
+        _isMobileSidebarActive = !_isMobileSidebarActive;
+    }
+
+    private void ToggleUserDropdown()
+    {
+        _isUserDropdownOpen = !_isUserDropdownOpen;
+    }
+}

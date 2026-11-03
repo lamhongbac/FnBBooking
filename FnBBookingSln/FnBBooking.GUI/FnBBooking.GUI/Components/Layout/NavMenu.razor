@@ -1,0 +1,309 @@
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+<style>
+    .pc-sidebar .m-header {
+        height: 120px;
+    }
+</style>
+
+<!-- [ Sidebar Menu ] start -->
+<div class="navbar-wrapper" style="overflow-y:auto">
+    <div class="m-header">
+        <a href="/" class="b-brand text-primary" style="margin: 0 auto">
+            <img style="width:120px; height:auto" class="login-logo" src="/assets/images/madam-lan-logo.png" alt="Madam Lan Logo" />
+        </a>
+    </div>
+    <div class="navbar-content">
+        <ul class="pc-navbar">
+            <li class="pc-item">
+                <NavLink href="/" class="pc-link" Match="NavLinkMatch.All">
+                    <span class="pc-micon"><i class="ti ti-home"></i></span>
+                    <span class="pc-mtext">Home</span>
+                </NavLink>
+            </li>
+
+            @* Sub-menu: Quản lý booking *@
+            @{
+                var bookingPaths = new List<string> { "/bookings", "/review-bookings" };
+                var isBookingActive = IsParentActive(bookingPaths);
+                var isBookingExpanded = _expandedNodes.Contains("booking");
+            }
+            <li class="pc-item pc-hasmenu @(isBookingActive ? "active" : "") @(isBookingExpanded ? "pc-trigger" : "")">
+                <a href="javascript:void(0)" class="pc-link" @onclick='() => ToggleNode("booking")'>
+                    <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+                    <span class="pc-mtext">Quản lý booking</span>
+                    <span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
+                </a>
+                <ul class="pc-submenu" style="display: @(isBookingExpanded ? "block" : "none")">
+                    <li class="pc-item">
+                        <NavLink href="/bookings" class="pc-link">
+                            <span class="pc-mtext">Booking and confirm</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/review-bookings" class="pc-link">
+                            <span class="pc-mtext">Duyệt booking</span>
+                        </NavLink>
+                    </li>
+                </ul>
+            </li>
+
+            @* Sub-menu: Quản lý Checkin/ Checkout *@
+            @{
+                var checkinCheckoutPaths = new List<string> { "/checkin-list", "/checkout-list" };
+                var isCheckinCheckoutActive = IsParentActive(checkinCheckoutPaths);
+                var isCheckinCheckoutExpanded = _expandedNodes.Contains("checkinCheckout");
+            }
+            <li class="pc-item pc-hasmenu @(isCheckinCheckoutActive ? "active" : "") @(isCheckinCheckoutExpanded ? "pc-trigger" : "")">
+                <a href="javascript:void(0)" class="pc-link" @onclick='() => ToggleNode("checkinCheckout")'>
+                    <span class="pc-micon"><i class="ti ti-map-pin"></i></span>
+                    <span class="pc-mtext" style="white-space: normal; line-height: 1.2; display: inline-block;">Quản lý Checkin/<br/>Checkout</span>
+                    <span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
+                </a>
+                <ul class="pc-submenu" style="display: @(isCheckinCheckoutExpanded ? "block" : "none")">
+                    <li class="pc-item">
+                        <NavLink href="/checkin-list" class="pc-link">
+                            <span class="pc-mtext">Check-in</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/checkout-list" class="pc-link">
+                            <span class="pc-mtext">Check-out</span>
+                        </NavLink>
+                    </li>
+                </ul>
+            </li>
+
+            @* Sub-menu: Quản lý thanh toán hoa hồng *@
+            @{
+                var commissionPaths = new List<string> { "/request-commission-manager", "/review-request-commission", "/cross-check-commission", "/paid-commission" };
+                var isCommissionActive = IsParentActive(commissionPaths);
+                var isCommissionExpanded = _expandedNodes.Contains("commission");
+            }
+            <li class="pc-item pc-hasmenu @(isCommissionActive ? "active" : "") @(isCommissionExpanded ? "pc-trigger" : "")">
+                <a href="javascript:void(0)" class="pc-link" @onclick='() => ToggleNode("commission")'>
+                    <span class="pc-micon"><i class="ti ti-cash"></i></span>
+                    <span class="pc-mtext">Quản lý thanh toán hoa hồng</span>
+                    <span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
+                </a>
+                <ul class="pc-submenu" style="display: @(isCommissionExpanded ? "block" : "none")">
+                    <li class="pc-item">
+                        <NavLink href="/request-commission-manager" class="pc-link">
+                            <span class="pc-mtext">Yêu cầu thanh toán</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/review-request-commission" class="pc-link">
+                            <span class="pc-mtext">Duyệt yêu cầu</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/cross-check-commission" class="pc-link">
+                            <span class="pc-mtext">Kiểm soát yêu cầu</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/paid-commission" class="pc-link">
+                            <span class="pc-mtext">Thanh toán</span>
+                        </NavLink>
+                    </li>
+                </ul>
+            </li>
+
+            @* Sub-menu: Quản trị danh mục (Master Data) *@
+            @{
+                var masterDataPaths = new List<string> { 
+                    "/area-manager",
+                    "/menu-item-manager", 
+                    "/organization-manager", 
+                    "/contact-type-manager", 
+                    "/contact-manager", 
+                    "/booking-channel-manager", 
+                    "/deposit-type-manager", 
+                    "/country-manager", 
+                    "/bank-info-manager",
+                    "/gsetting-manager"
+                };
+                var isMasterDataActive = IsParentActive(masterDataPaths);
+                var isMasterDataExpanded = _expandedNodes.Contains("masterData");
+            }
+            <li class="pc-item pc-hasmenu @(isMasterDataActive ? "active" : "") @(isMasterDataExpanded ? "pc-trigger" : "")">
+                <a href="javascript:void(0)" class="pc-link" @onclick='() => ToggleNode("masterData")'>
+                    <span class="pc-micon"><i class="ti ti-tag"></i></span>
+                    <span class="pc-mtext">Quản lý danh mục</span>
+                    <span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
+                </a>
+                <ul class="pc-submenu" style="display: @(isMasterDataExpanded ? "block" : "none")">
+                    <li class="pc-item">
+                        <NavLink href="/area-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý khu vực</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/menu-item-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý menu item</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/organization-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý tổ chức</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/contact-type-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý loại liên hệ</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/contact-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý liên hệ</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/booking-channel-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý kênh đặt bàn</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/deposit-type-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý hình thức cọc</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/country-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý quốc gia</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/bank-info-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý ngân hàng</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/gsetting-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý cấu hình</span>
+                        </NavLink>
+                    </li>
+                </ul>
+            </li>
+
+            @* Sub-menu: Quản lý hệ thống *@
+            @{
+                var sysPaths = new List<string> { "/account-manager", "/permission-manager" };
+                var isSysActive = IsParentActive(sysPaths);
+                var isSysExpanded = _expandedNodes.Contains("sys");
+            }
+            <li class="pc-item pc-hasmenu @(isSysActive ? "active" : "") @(isSysExpanded ? "pc-trigger" : "")">
+                <a href="javascript:void(0)" class="pc-link" @onclick='() => ToggleNode("sys")'>
+                    <span class="pc-micon"><i class="ti ti-settings"></i></span>
+                    <span class="pc-mtext">Quản lý hệ thống</span>
+                    <span class="pc-arrow"><i class="ti ti-chevron-right"></i></span>
+                </a>
+                <ul class="pc-submenu" style="display: @(isSysExpanded ? "block" : "none")">
+                    <li class="pc-item">
+                        <NavLink href="/account-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý tài khoản</span>
+                        </NavLink>
+                    </li>
+                    <li class="pc-item">
+                        <NavLink href="/permission-manager" class="pc-link">
+                            <span class="pc-mtext">Quản lý phân quyền</span>
+                        </NavLink>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    private HashSet<string> _expandedNodes = new();
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+        ExpandParents();
+    }
+
+    private void ExpandParents()
+    {
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        var currentPath = "/" + relativePath.Split('?')[0].Split('#')[0];
+
+        if (currentPath.StartsWith("/bookings") || currentPath.StartsWith("/review-bookings"))
+        {
+            _expandedNodes.Add("booking");
+        }
+        else if (currentPath.StartsWith("/checkin-list") || currentPath.StartsWith("/checkout-list"))
+        {
+            _expandedNodes.Add("checkinCheckout");
+        }
+        else if (currentPath.StartsWith("/request-commission") || currentPath.StartsWith("/review-request-commission") 
+              || currentPath.StartsWith("/cross-check-commission") || currentPath.StartsWith("/paid-commission"))
+        {
+            _expandedNodes.Add("commission");
+        }
+        else if (currentPath.StartsWith("/account-manager") || currentPath.StartsWith("/permission-manager"))
+        {
+            _expandedNodes.Add("sys");
+        }
+        else if (currentPath.StartsWith("/area-manager") || currentPath.StartsWith("/menu-item-manager") || currentPath.StartsWith("/organization-manager")
+              || currentPath.StartsWith("/contact-type-manager") || currentPath.StartsWith("/contact-manager")
+              || currentPath.StartsWith("/booking-channel-manager") || currentPath.StartsWith("/deposit-type-manager")
+              || currentPath.StartsWith("/country-manager") || currentPath.StartsWith("/bank-info-manager")
+              || currentPath.StartsWith("/gsetting-manager"))
+        {
+            _expandedNodes.Add("masterData");
+        }
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        ExpandParents();
+        StateHasChanged();
+    }
+
+    private void ToggleNode(string key)
+    {
+        if (_expandedNodes.Contains(key))
+        {
+            _expandedNodes.Remove(key);
+        }
+        else
+        {
+            _expandedNodes.Add(key);
+        }
+    }
+
+    private string GetActive(string href, bool isExact = false)
+    {
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        var currentPath = "/" + relativePath.Split('?')[0].Split('#')[0];
+        
+        if (isExact)
+        {
+            return currentPath == href ? "active" : "";
+        }
+        
+        return currentPath.StartsWith(href) ? "active" : "";
+    }
+
+    private bool IsParentActive(List<string> childHrefs)
+    {
+        foreach (var href in childHrefs)
+        {
+            if (!string.IsNullOrEmpty(GetActive(href)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
+}
+

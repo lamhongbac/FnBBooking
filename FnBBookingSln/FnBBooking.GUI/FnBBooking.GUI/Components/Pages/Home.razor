@@ -1,0 +1,153 @@
+@page "/"
+
+<PageTitle>Trang Chủ - @ViewModel.RestaurantName</PageTitle>
+
+<!-- [ Banner Header ] start -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card bg-light-primary border-primary">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center">
+                        <img src="/assets/images/madam-lan-logo.png" alt="Madam Lan Logo" style="height: 70px; margin-right: 20px;" />
+                        <div>
+                            <h4 class="mb-1 text-primary">@ViewModel.RestaurantName</h4>
+                            <p class="text-muted mb-0">@ViewModel.WelcomeMessage</p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="badge bg-primary px-3 py-2 fs-6">
+                            <i class="ti ti-calendar me-1"></i> Ngày: @ViewModel.ReportDate.ToString("dd/MM/yyyy")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- [ Banner Header ] end -->
+
+<!-- [ 4 Stats Cards ] start -->
+<div class="row">
+    @foreach (var stat in ViewModel.Stats)
+    {
+        <div class="col-md-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-2 f-w-400 text-muted">@stat.Title</h6>
+                    <h4 class="mb-3">
+                        @stat.Value
+                        <span class="badge @stat.BadgeClass border ms-1">
+                            <i class="@stat.IconClass"></i> @stat.BadgeText
+                        </span>
+                    </h4>
+                    <p class="mb-0 text-muted text-sm">@stat.Subtitle</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<!-- [ 4 Stats Cards ] end -->
+
+<!-- [ Main Content Rows ] start -->
+<div class="row mt-2">
+    <!-- [ Left Column: Recent Bookings ] start -->
+    <div class="col-md-12 col-xl-8">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0"><i class="ti ti-calendar-event me-1"></i> Danh Sách Booking Gần Nhất</h5>
+            <NavLink href="/bookings" class="btn btn-sm btn-outline-primary">
+                Xem tất cả <i class="ti ti-arrow-right ms-1"></i>
+            </NavLink>
+        </div>
+        <div class="card tbl-card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-borderless mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>MÃ BOOKING</th>
+                                <th>KHÁCH HÀNG</th>
+                                <th>SỐ LƯỢNG</th>
+                                <th>GIỜ ĐẾN</th>
+                                <th>KHU VỰC</th>
+                                <th>TRẠNG THÁI</th>
+                                <th class="text-end">TỔNG TIỀN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var booking in ViewModel.RecentBookings)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="/bookings" class="fw-bold text-primary">@booking.BookingCode</a>
+                                    </td>
+                                    <td>
+                                        <div><strong>@booking.CustomerName</strong></div>
+                                        <small class="text-muted"><i class="ti ti-phone"></i> @booking.PhoneNumber</small>
+                                    </td>
+                                    <td>@booking.GuestSummary</td>
+                                    <td>@booking.BookingTime</td>
+                                    <td>
+                                        <span class="text-muted"><i class="ti ti-map-pin"></i> @booking.AreaName</span>
+                                    </td>
+                                    <td>
+                                        <span class="@booking.StatusBadgeClass">@booking.Status</span>
+                                    </td>
+                                    <td class="text-end fw-semibold text-dark">
+                                        @booking.TotalAmount.ToString("N0") đ
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- [ Left Column: Recent Bookings ] end -->
+
+    <!-- [ Right Column: Recent Activities ] start -->
+    <div class="col-md-12 col-xl-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0"><i class="ti ti-bell me-1"></i> Hoạt Động & Giao Dịch Mới</h5>
+        </div>
+        <div class="card">
+            <div class="list-group list-group-flush">
+                @foreach (var activity in ViewModel.RecentActivities)
+                {
+                    <div class="list-group-item list-group-item-action">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <div class="avtar avtar-s rounded-circle @activity.AvatarBgClass">
+                                    <i class="@activity.IconClass f-18"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-1">@activity.Title</h6>
+                                <p class="mb-1 text-muted text-sm">@activity.Description</p>
+                                <small class="text-muted"><i class="ti ti-clock"></i> @activity.TimeAgo</small>
+                            </div>
+                            @if (!string.IsNullOrEmpty(activity.AmountText))
+                            {
+                                <div class="flex-shrink-0 text-end">
+                                    <span class="badge bg-light-success text-success fw-bold">@activity.AmountText</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <!-- [ Right Column: Recent Activities ] end -->
+</div>
+<!-- [ Main Content Rows ] end -->
+
+@code {
+    private DashboardViewModel ViewModel { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        ViewModel = DashboardViewModel.CreateSampleData();
+    }
+}

@@ -1,0 +1,148 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+@if (_isOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1055;" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title text-primary d-flex align-items-center">
+                        <i class="ti @(IsEditMode ? "ti-edit" : "ti-plus") me-2 fs-4"></i>
+                        @(IsEditMode ? $"Cập Nhật Khu Vực - {Model.Number}" : "Thêm Mới Khu Vực")
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+                </div>
+
+                <EditForm Model="@Model" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="modal-body py-4">
+                        <div class="row g-3">
+                            <!-- Mã Khu Vực (Number) -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    Mã Khu Vực <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control" @bind-Value="Model.Number" placeholder="VD: KV-SANVUON" />
+                                <ValidationMessage For="() => Model.Number" class="text-danger small mt-1" />
+                            </div>
+
+                            <!-- Tên Khu Vực (Name) -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    Tên Khu Vực <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control" @bind-Value="Model.Name" placeholder="VD: Khu Vực Sân Vườn" />
+                                <ValidationMessage For="() => Model.Name" class="text-danger small mt-1" />
+                            </div>
+
+                            <!-- Mô Tả (Description) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Mô Tả</label>
+                                <InputTextArea class="form-control" @bind-Value="Model.Description" rows="3" placeholder="Nhập ghi chú đặc điểm, sức chứa hoặc vị trí khu vực..." />
+                                <ValidationMessage For="() => Model.Description" class="text-danger small mt-1" />
+                            </div>
+
+                            <!-- Trạng Thái (IsActive) -->
+                            <div class="col-12">
+                                <div class="form-check form-switch mt-2">
+                                    <InputCheckbox class="form-check-input" id="areaIsActive" @bind-Value="Model.IsActive" />
+                                    <label class="form-check-label fw-semibold" for="areaIsActive">
+                                        Kích hoạt sử dụng (Hoạt động)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Audit Metadata Info -->
+                        <div class="mt-4 p-3 bg-light rounded border">
+                            <div class="row text-muted small">
+                                <div class="col-sm-6">
+                                    <i class="ti ti-user me-1"></i> Người thực hiện: <strong class="text-dark">@CurrentLoginId</strong>
+                                </div>
+                                <div class="col-sm-6 text-sm-end">
+                                    <i class="ti ti-clock me-1"></i> Thời gian: <strong class="text-dark">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="Close">
+                            <i class="ti ti-x me-1"></i> Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="ti ti-device-floppy me-1"></i> @(IsEditMode ? "Lưu Thay Đổi" : "Tạo Mới")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public EventCallback<AreaViewModel> OnSaved { get; set; }
+
+    [Parameter]
+    public EventCallback OnClosed { get; set; }
+
+    private bool _isOpen = false;
+    private bool IsEditMode => Model.Id > 0;
+    private AreaViewModel Model { get; set; } = new();
+
+    private string CurrentLoginId => Configuration["AppConfig:CurrentLoginId"] ?? "admin";
+
+    public void ShowCreate()
+    {
+        Model = new AreaViewModel
+        {
+            Id = 0,
+            IsActive = true,
+            CreatedBy = CurrentLoginId,
+            ModifiedBy = CurrentLoginId,
+            CreatedOn = DateTime.Now,
+            ModifiedOn = DateTime.Now
+        };
+        _isOpen = true;
+        StateHasChanged();
+    }
+
+    public void ShowEdit(AreaViewModel item)
+    {
+        Model = item.Clone();
+        Model.ModifiedBy = CurrentLoginId;
+        Model.ModifiedOn = DateTime.Now;
+        _isOpen = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        _isOpen = false;
+        OnClosed.InvokeAsync();
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        // Trim inputs
+        Model.Number = Model.Number.Trim();
+        Model.Name = Model.Name.Trim();
+        Model.Description = Model.Description?.Trim();
+        Model.ModifiedBy = CurrentLoginId;
+        Model.ModifiedOn = DateTime.Now;
+
+        if (Model.Id == 0)
+        {
+            Model.CreatedBy = CurrentLoginId;
+            Model.CreatedOn = DateTime.Now;
+        }
+
+        _isOpen = false;
+        await OnSaved.InvokeAsync(Model);
+    }
+}
+
