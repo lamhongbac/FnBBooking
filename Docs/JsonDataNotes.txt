@@ -10,4 +10,3 @@ FnBBooking.Shared là nơi chứa các model (kg phải viewmodel) dùng chung g
 dự án shared dùng để hiện thực nguyên lý DRY 
 Mô hình
 GUI->API-> BLL->JDAL->Json Storage
- 
