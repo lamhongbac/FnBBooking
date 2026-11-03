@@ -1,0 +1,148 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+@if (_isOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1055;" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title text-primary d-flex align-items-center">
+                        <i class="ti @(IsEditMode ? "ti-edit" : "ti-plus") me-2 fs-4"></i>
+                        @(IsEditMode ? $"Cập Nhật Kênh Đặt Bàn - {Model.Number}" : "Thêm Mới Kênh Đặt Bàn")
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+                </div>
+
+                <EditForm Model="@Model" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="modal-body py-4">
+                        <div class="row g-3">
+                            <!-- Mã kênh đặt bàn (Number) -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    Mã Kênh <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control" @bind-Value="Model.Number" disabled="@IsEditMode" placeholder="VD: Direct, Website, Hotline..." />
+                                <ValidationMessage For="() => Model.Number" class="text-danger small mt-1" />
+                            </div>
+
+                            <!-- Trạng thái hoạt động -->
+                            <div class="col-md-6 d-flex align-items-center pt-3">
+                                <div class="form-check form-switch mt-2">
+                                    <InputCheckbox class="form-check-input" @bind-Value="Model.IsActive" id="chkActiveBookingChannel" />
+                                    <label class="form-check-label fw-bold" for="chkActiveBookingChannel">
+                                        Đang hoạt động
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Tên kênh đặt bàn (Name) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    Tên Kênh Đặt Bàn <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control" @bind-Value="Model.Name" placeholder="VD: Khách gọi Hotline, Trực tiếp tại quầy..." />
+                                <ValidationMessage For="() => Model.Name" class="text-danger small mt-1" />
+                            </div>
+
+                            <!-- Mô tả (Description) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Mô Tả Chi Tiết</label>
+                                <InputTextArea class="form-control" rows="3" @bind-Value="Model.Description" placeholder="Nhập ghi chú hoặc mô tả về kênh đặt bàn..." />
+                                <ValidationMessage For="() => Model.Description" class="text-danger small mt-1" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary px-3" @onclick="Close">
+                            <i class="ti ti-x me-1"></i> Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="ti ti-device-floppy me-1"></i> Lưu Thông Tin
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isOpen;
+
+    [Parameter]
+    public BookingChannelViewModel Model { get; set; } = new();
+
+    [Parameter]
+    public bool IsEditMode { get; set; }
+
+    [Parameter]
+    public EventCallback<BookingChannelViewModel> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    public void Open(BookingChannelViewModel? model = null)
+    {
+        if (model != null)
+        {
+            Model = new BookingChannelViewModel
+            {
+                Id = model.Id,
+                Number = model.Number,
+                Name = model.Name,
+                Description = model.Description,
+                IsActive = model.IsActive,
+                IsDeleted = model.IsDeleted,
+                CreatedOn = model.CreatedOn,
+                CreatedBy = model.CreatedBy,
+                ModifiedOn = model.ModifiedOn,
+                ModifiedBy = model.ModifiedBy
+            };
+            IsEditMode = true;
+        }
+        else
+        {
+            Model = new BookingChannelViewModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                IsActive = true,
+                CreatedOn = DateTime.Now,
+                CreatedBy = Configuration["AppConfig:CurrentLoginId"] ?? "admin"
+            };
+            IsEditMode = false;
+        }
+
+        _isOpen = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        _isOpen = false;
+        OnClose.InvokeAsync();
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        string currentUserId = Configuration["AppConfig:CurrentLoginId"] ?? "admin";
+        if (IsEditMode)
+        {
+            Model.ModifiedOn = DateTime.Now;
+            Model.ModifiedBy = currentUserId;
+        }
+        else
+        {
+            Model.CreatedOn = DateTime.Now;
+            Model.CreatedBy = currentUserId;
+        }
+
+        await OnSave.InvokeAsync(Model);
+        Close();
+    }
+}
+

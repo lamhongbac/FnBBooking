@@ -1,0 +1,200 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+@if (_isOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1055;" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title text-primary d-flex align-items-center">
+                        <i class="ti @(IsEditMode ? "ti-edit" : "ti-plus") me-2 fs-4"></i>
+                        @(IsEditMode ? $"Cập Nhật Loại Khách / Liên Hệ - {Model.Number}" : "Thêm Mới Loại Khách / Liên Hệ")
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="Close"></button>
+                </div>
+
+                <EditForm Model="@Model" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="modal-body py-4">
+                        <div class="row g-3">
+                            <!-- Mã loại liên hệ (Number) -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">
+                                    Mã Loại Liên Hệ <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control" @bind-Value="Model.Number" disabled="@IsEditMode" placeholder="VD: TourGuide, TravelAgency, HotelResort..." />
+                                <ValidationMessage For="() => Model.Number" class="text-danger small mt-1" />
+                            </div>
+
+                            <!-- Trạng thái hoạt động -->
+                            <div class="col-md-6 d-flex align-items-center pt-3">
+                                <div class="form-check form-switch mt-2">
+                                    <InputCheckbox class="form-check-input" @bind-Value="Model.IsActive" id="chkActiveContactType" />
+                                    <label class="form-check-label fw-bold" for="chkActiveContactType">
+                                        Đang hoạt động
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Tên loại liên hệ (Name) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">
+                                    Tên Loại Liên Hệ <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control" @bind-Value="Model.Name" placeholder="VD: Hướng dẫn viên du lịch, Công ty lữ hành..." />
+                                <ValidationMessage For="() => Model.Name" class="text-danger small mt-1" />
+                            </div>
+
+                            <!-- Mô tả chi tiết (Description) -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Mô Tả Chi Tiết</label>
+                                <InputTextArea class="form-control" rows="2" @bind-Value="Model.Description" placeholder="Mô tả phạm vi hoặc đặc điểm của loại đối tác..." />
+                                <ValidationMessage For="() => Model.Description" class="text-danger small mt-1" />
+                            </div>
+
+                            <!-- Checkbox Có Hoa Hồng -->
+                            <div class="col-12">
+                                <div class="card bg-light border p-3">
+                                    <div class="form-check form-switch">
+                                        <InputCheckbox class="form-check-input" @bind-Value="Model.HaveCommision" id="chkHaveCommission" />
+                                        <label class="form-check-label fw-bold text-success" for="chkHaveCommission">
+                                            Áp dụng chính sách hoa hồng cho loại đối tác này
+                                        </label>
+                                    </div>
+
+                                    @if (Model.HaveCommision)
+                                    {
+                                        <div class="row g-3 mt-1">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">
+                                                    Hoa hồng Set Menu (%) <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <InputNumber class="form-control" @bind-Value="Model.CommissionRate1" step="0.1" />
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                                <ValidationMessage For="() => Model.CommissionRate1" class="text-danger small mt-1" />
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-bold">
+                                                    Hoa hồng A-la-carte (%) <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <InputNumber class="form-control" @bind-Value="Model.CommissionRate2" step="0.1" />
+                                                    <span class="input-group-text">%</span>
+                                                </div>
+                                                <ValidationMessage For="() => Model.CommissionRate2" class="text-danger small mt-1" />
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary px-3" @onclick="Close">
+                            <i class="ti ti-x me-1"></i> Hủy
+                        </button>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="ti ti-device-floppy me-1"></i> Lưu Thông Tin
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isOpen;
+
+    [Parameter]
+    public ContactTypeViewModel Model { get; set; } = new();
+
+    [Parameter]
+    public bool IsEditMode { get; set; }
+
+    [Parameter]
+    public EventCallback<ContactTypeViewModel> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    public void Open(ContactTypeViewModel? model = null)
+    {
+        if (model != null)
+        {
+            Model = new ContactTypeViewModel
+            {
+                Id = model.Id,
+                Number = model.Number,
+                Name = model.Name,
+                Description = model.Description,
+                HaveCommision = model.HaveCommision,
+                CommissionRate1 = model.CommissionRate1,
+                CommissionRate2 = model.CommissionRate2,
+                IsActive = model.IsActive,
+                IsDeleted = model.IsDeleted,
+                CreatedOn = model.CreatedOn,
+                CreatedBy = model.CreatedBy,
+                ModifiedOn = model.ModifiedOn,
+                ModifiedBy = model.ModifiedBy
+            };
+            IsEditMode = true;
+        }
+        else
+        {
+            Model = new ContactTypeViewModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                IsActive = true,
+                HaveCommision = false,
+                CommissionRate1 = 0,
+                CommissionRate2 = 0,
+                CreatedOn = DateTime.Now,
+                CreatedBy = Configuration["AppConfig:CurrentLoginId"] ?? "admin"
+            };
+            IsEditMode = false;
+        }
+
+        _isOpen = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        _isOpen = false;
+        OnClose.InvokeAsync();
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        string currentUserId = Configuration["AppConfig:CurrentLoginId"] ?? "admin";
+        if (IsEditMode)
+        {
+            Model.ModifiedOn = DateTime.Now;
+            Model.ModifiedBy = currentUserId;
+        }
+        else
+        {
+            Model.CreatedOn = DateTime.Now;
+            Model.CreatedBy = currentUserId;
+        }
+
+        // Nếu bỏ chọn hoa hồng thì reset về 0
+        if (!Model.HaveCommision)
+        {
+            Model.CommissionRate1 = 0;
+            Model.CommissionRate2 = 0;
+        }
+
+        await OnSave.InvokeAsync(Model);
+        Close();
+    }
+}
+

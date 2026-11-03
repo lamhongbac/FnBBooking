@@ -1,0 +1,19 @@
+# Kiến trúc Kỹ thuật (Technical Architecture) 
+## 1. Mô hình tổng thể Hệ thống tuân thủ 
+**.NET 8 Clean Architecture** kết hợp với mô hình giao diện 
+**Blazor Web App (Interactive Server)** nhằm đảm bảo tính bảo mật, hiệu năng cao và dễ dàng bảo trì. 
+## 2. Các tầng (Layers) Dự án được chia thành 4 lớp: 
+- **GUI**: Tầng Giao diện Web. Công nghệ: Blazor Server, thư viện UI: MudBlazor. Nhiệm vụ: Tương tác người dùng, hiển thị ViewModels và giao tiếp với BLL thông qua các GUI Services. 
+- **BLL**: Tầng Xử lý nghiệp vụ. Nhiệm vụ: Xử lý logic . Dữ liệu trung gian: Business Objects (BO). Đầu ra được bọc trong đối tượng `BOProcessResult`. 
+- **DAL**: Tầng truy cập dữ liệu. Công nghệ chủ đạo: 
+**Entity Framework Core (EF Core)** theo phương pháp **Database-First** (Sử dụng công cụ để Reverse Engineer Database). 
+Thao tác trực tiếp với cơ sở dữ liệu qua Repository Pattern, đảm bảo sự đồng bộ chặt chẽ với lược đồ CSDL thực tế. 
+- **Shared**: Tầng dùng chung. Chứa Constants, Enums, Models cơ bản, Mapster và ClosedXML/EPPlus. 
+## 3. Luồng dữ liệu: được thiết kế theo 2 hướng
++ 1.Không sử dụng API: (Data Flow) GUI (ViewModel) -> BLL (BO) -> DAL (Entity) -> SQL Server. 
++ 2.Có sử dụng API: (Data Flow) GUI (ViewModel) -> API-> BLL (BO:Shared**) -> DAL (Entity) -> SQL Server.
+Không có tầng nào vượt cấp. Dữ liệu luân chuyển theo 1 chiều thống nhất.
+## 4. Tích hợp với các dịch vụ đã xây: là các dịch vụ của MSA đã triển khai bên ngoài và dùng lại
++MediaService: dùng để lưu trữ hình ảnh lên server lưu trữ
++JDAL: dùng lưu trữ data dưới dạng json vào API server
++AutoServiceFW: dùng để quản lý các background job 
