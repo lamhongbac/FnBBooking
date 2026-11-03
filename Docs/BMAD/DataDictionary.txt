@@ -1,1 +1,123 @@
-# Từ điển Dữ liệu (Data Dictionary) Hệ thống bao gồm hai nhóm dữ liệu chính: Master Data và Transaction Data. Lược đồ được sinh ra tự động theo mô hình EF Core DB-First. ## 1. Master Data (Dữ liệu Danh mục) - **ProductGroup (Nhóm sản phẩm)** - Quản lý nhóm món ăn (liên kết qua `GroupCode`). - **Product (Sản phẩm)** - Danh sách Menu Item chi tiết. - Có các cột đặc thù: `Unit` (Đơn vị tính), `Cosprice` (Giá vốn), `SellingPrice` (Giá bán). - **StoreGroup (Nhóm cửa hàng)** - Lưu cấu trúc phân nhóm các cửa hàng. - **Store (Cửa hàng)** - Danh mục các nhà hàng (liên kết qua `StoreCode`). - Bao gồm cấu hình để làm gốc tính toán: `NumOfTables` (Tổng số bàn), `MinMenuSelling` (Mức doanh số sàn), `MinSalesContribution` (Mức đóng góp sàn). ## 2. Transaction Data (Dữ liệu Giao dịch) - **MonthlySaleHeader** - Quản lý định danh báo cáo: `StoreCode`, `Year`, `Month`. - Cột tham số chung tự nhập: `Tc` (Transaction count - Số lượng khách/bill). - Cột sao chép/tổng hợp: `Tables` (từ Store), `Sales`, `Cos`, `TotalMargin`. - **MonthlySale** - Chi tiết từng món bán ra theo header. - Thông tin gốc (Copy từ Master Data): `ProductCode`, `ProductName`, `Unit`, `GroupCode`, `Cosprice`, `SellingPrice`. - Kết quả bán thực tế: `SoldQuantity`, `Margin`. - Chỉ số phân tích chuyên sâu (Calculated fields): `CosPercentage`, `SaleMixPercentage`, `MarginMixPercentage`, `ProductMixPercentage`, `TcTable`, `Per100Tc`, `Per100Quality`, `Per100Selling`. - Phân loại Menu Mix: `Popularity`, `Profitability`, `ItemClass` (Star, Plowhorse, Puzzle, Dog). ## 3. Cấu trúc Base Entity / Audit Fields Tất cả các bảng đều được chuẩn hóa với các trường Audit cơ bản: - `CreatedBy`, `CreatedOn` - `ModifiedBy`, `ModifiedOn` - Trạng thái soft-delete: `IsDeleted`, `IsActive`
+# Từ điển Dữ liệu (Data Dictionary) — Hệ thống AppBooking Madame Lân
+
+Hệ thống bao gồm hai nhóm dữ liệu chính:
+- Master Data (Dữ liệu Danh mục CSDL & JSON Reference Data)
+- Transaction Data (Dữ liệu Giao dịch 3 Sổ SSoT)
+
+Lược đồ được thiết kế theo mô hình EF Core DB-First, tuân thủ kiến trúc phân cấp BMAD.
+
+================================================================================
+1. MASTER DATA
+================================================================================
+
+1.1 Danh mục 7 Bảng SQL Server CSDL:
+
+- Account (Tài khoản & Phân quyền RBAC):
+  Quản lý tài khoản người dùng và ma trận phân quyền 8 vai trò (Admin, SaleAdmin, SaleManager, Receptionist, Supervisor, Cashier, Accountant, ChiefAccountant).
+  * Các trường đặc thù:
+    + IsFirstLogin: Cờ bắt buộc người dùng mới đổi mật khẩu mặc định (123456) ở lần đăng nhập đầu tiên.
+    + UserType: Phân định vai trò vận hành kiểm soát quyền hạn truy cập theo ma trận RBAC.
+
+- Contact (Danh bạ Đối tác & Hướng dẫn viên):
+  Quản lý danh bạ Booker, Hướng dẫn viên (HDV), Đối tác lữ hành và Khách lẻ.
+  * Các trường đặc thù:
+    + PhoneNo: Áp dụng thuật toán sinh SĐT ảo "0905697555-xxxxx" khi Booker không có SĐT thật. CSDL cấu hình Filtered Unique Index `WHERE PhoneNo NOT LIKE '0905697555-%'` để tránh đụng độ khóa Unique.
+    + IsForeigner & CountryCode: Cờ khách nước ngoài và quốc tịch ISO-2 (nạp từ Countries.json).
+    + GuideCode, IDCard_CCCD, IssueDate, IssuePlace: Bộ trường hồ sơ pháp lý HDV phục vụ khấu trừ thuế TNCN 10%.
+    + BankAccountName, BankName, BankAccountNo: Thông tin tài khoản thụ hưởng chi trả hoa hồng (Tên viết hoa không dấu, ngân hàng chọn từ Banks.json).
+
+- Organization (Doanh nghiệp & Đại lý Lữ hành B2B):
+  Quản lý thông tin Công ty lữ hành, Khách sạn/Resort đối tác.
+  * Các trường đặc thù:
+    + MarketCountries: Lưu mảng dạng JSON (ví dụ: '["VN", "KR", "US"]') các thị trường khai thác B2B, binding từ Countries.json.
+    + TaxCode & BusinessLicenseImage: Mã số thuế VAT và đường dẫn ảnh Giấy phép kinh doanh phục vụ xác minh pháp nhân.
+
+- MenuItems (Danh mục Thực đơn & Bảng giá):
+  Nguồn SSoT bảng giá niêm yết món ăn Alacarte và gói Setmenu.
+  * Các trường đặc thù:
+    + Product_Id: Mã ánh xạ định danh món ăn đồng bộ 1 chiều sang máy POS RK7.
+    + FaceValue: Đơn giá niêm yết bán cho khách trên 1 PAX.
+    + NetValue / BasePrice: Tổng giá vốn thực tế tự động tính từ các món con Alacarte trong gói Setmenu.
+    + ApplyDiscount: Cờ cho phép/không cho phép tính hoa hồng môi giới RPC trên doanh thu món.
+    + IsActive: Trạng thái hoạt động. Khi ngưng (IsActive = 0), hệ thống ngắt tuyệt đối việc chọn món khi Submit Booking.
+
+- SetMenuDetails (Chi tiết Món con trong Setmenu):
+  Bảng con quan hệ 1-N với MenuItems (Set cha).
+  * Các trường đặc thù:
+    + BaseDishId, QuantityInSet, UnitPrice: Lưu danh sách món con Alacarte thành phần để tính giá vốn NetValue và làm căn cứ cho thuật toán đổi món SwapDish (tối đa 2 món/Set).
+
+- DiscountPolicy (Header Chính sách Chiết khấu):
+  Quản lý khung chính sách chiết khấu hoa hồng môi giới.
+  * Các trường đặc thù:
+    + AppliedBillType: Phân loại áp dụng (SetMenu, Alacarte, Both). Ràng buộc chặn cứng 0% chiết khấu Alacarte cho Khách lẻ (Individual).
+    + OrgID & ContactTypes: Ma trận ưu tiên áp dụng (OrgID chỉ định công ty đè chính sách chung ContactType).
+    + FromDate & ToDate: Khung thời gian hiệu lực của chính sách.
+
+- DiscountTiers (Lưới Bậc thang Doanh thu Slab Pricing):
+  Bảng con 1-N với DiscountPolicy, quản lý dải chiết khấu bậc thang theo tổng tiền hóa đơn.
+  * Các trường đặc thù:
+    + FromAmount, ToAmount, DiscountRate: Quy tắc dải liên tục không khoảng trống Gap, mốc cuối cùng bắt buộc mở trần [Trở lên] (ToAmount = NULL).
+
+1.2 Danh mục 6 Tệp Cấu hình JSON:
+Tất cả các danh mục tham chiếu tĩnh dùng chung được lưu dưới dạng JSON để nạp nhanh cho UI:
+- Banks.json: Danh mục 80+ Ngân hàng thương mại kèm Mã CITAD 8 chữ số phục vụ xuất file Excel thanh toán lô nạp Internet Banking.
+- Countries.json: Danh mục Mã Quốc gia(VN, KR, US...) dùng cho ô chọn Quốc tịch và Thị trường Market.
+- ContactTypes.json: Danh mục Loại liên hệ (Individual, TourGuide, TravelAgency...) kèm cờ AllowCommission.
+- BookingChannels.json: Danh mục Kênh tiếp nhận tiệc (Hotline, Website, Zalo OA, Fanpage, Direct...).
+- DepositMethods.json: Danh mục Hình thức cọc (Cash, BankTransfer, CreditCard...).
+- ServiceShifts.json: Danh mục 4 Ca phục vụ (Ca 1: 06-10h, Ca 2: 10-14h, Ca 3: 14-18h, Ca 4: 18-22h) cho Lễ tân và Bếp lọc tiệc.
+
+================================================================================
+2. TRANSACTION DATA (DỮ LIỆU GIAO DỊCH 3 SỔ SSOT)
+================================================================================
+
+Hệ thống quản lý vòng đời tiệc qua 3 quyển sổ dữ liệu độc lập, nối tiếp nhau theo tiến trình vận hành:
+
+2.1 Sổ Booking (BookingTrans):
+Lưu trữ thỏa thuận đặt tiệc ban đầu giữa Sale Admin/Manager và Booker.
+* Các trường đặc thù:
+  + BookingCode: Mã định danh tiệc tự sinh định dạng BKG-YYYYMMDD-xxx.
+  + BookerName_Draft & BookerPhone_Draft: Hai trường sao lưu nháp thông tin Booker tại thời điểm tạo tiệc. Kích hoạt cơ chế Fallback Snapshot hiển thị giao diện khi Contact Master bị xóa mềm (IsDeleted = 1).
+  + Guides_Detail: Mảng lưu danh sách các xe/HDV thuộc đoàn tiệc lớn nhiều xe.
+  + ExternalRules: Cờ chứa các quy tắc ngoại lệ (IsVIP, IsVAT, IsSignBill, IsLargeParty).
+  + DepositAmount, DepositMethod, DepositSlipImage: Thông tin cọc và đường dẫn ảnh chứng từ cọc (Ủy nhiệm chi / Slip).
+  + CustomerConfirmStatus: Unconfirmed (chưa phản hồi), Confirmed (khách đồng ý), Cancel (khách hủy) 
+  + BookingReview: Pending, Approved, Reject
+
+
+
+2.2 Sổ Sử dụng Dịch vụ (CustomerTracking):
+Lưu trữ dữ liệu thực tế phát sinh tại sảnh nhà hàng trong ca phục vụ do Lễ tân, Supervisor, Bếp và Thu ngân ghi nhận.
+* Các trường đặc thù:
+  + ActualPAX: Số lượng khách thực tế đến sảnh (đối soát với AdultPAX thỏa thuận ban đầu trên Booking).
+  + CheckinTime & CheckoutTime: Dấu thời gian thực tế khách vào bàn và hoàn tất thanh toán.
+  + TableNo: Số bàn/Khu vực sảnh xếp tiệc.
+  + POSBill: Mảng lưu danh sách các mã hóa đơn xuất từ máy POS RK7 (BillNo, BillAmount, BillType).
+  + POSBillImage: Đường dẫn ảnh chụp hóa đơn POS RK7 có chữ ký khách hàng do Thu ngân upload khi Check-out.
+  + UsingServiceStatus: Pending, CheckIn, CheckOut, Cancel 
+
+2.3 Sổ Thanh toán Hoa hồng (BookingCommission):
+Lưu trữ căn cứ tính toán, đối soát và giải ngân hoa hồng môi giới cho đối tác lữ hành và hướng dẫn viên.
+* Các trường đặc thù:
+  + TotalBillAmount: Tổng doanh thu thực tế được tính hoa hồng (sau khi bóc tách loại trừ doanh thu Alacarte nếu không thuộc chính sách).
+  + AppliedDiscountRate: Tỷ lệ chiết khấu (%) được đóng băng (Data Snapshot) tại thời điểm phê duyệt đề nghị RPC.
+  + CommissionAmount: Số tiền hoa hồng thực nhận sau khi trừ cước cọc hoặc thuế TNCN (10%).
+  + IsTaxDeducted: Cờ đánh dấu khấu trừ thuế TNCN 10% đối với HDV cá nhân.
+  + BeneficiaryName, BeneficiaryAccountNo, CITADCode: Thông tin người thụ hưởng và mã CITAD 8 chữ số trích xuất từ Banks.json để đưa vào file Excel chi hộ Internet Banking.
+  + RPCStatus: Pending, Requested
+  + ApprovedRPCStatus: Draft (Nháp), PendingSaleManager (Chờ Sale Manager duyệt), PendingAccountant (Chờ kế toán duyệt), PendingChiefAccountant (Chờ kế toán trưởng duyệt), Paid(Đã thanh toán), Rejected (Từ chối).
+
+================================================================================
+3. CẤU TRÚC BASE ENTITY & AUDIT FIELDS
+================================================================================
+
+Tất cả các bảng CSDL SQL Server trong hệ thống đều tích hợp chuẩn hóa các trường Audit cơ bản:
+- CreatedBy (VARCHAR(50)): Mã người dùng khởi tạo bản ghi.
+- CreatedOn (DATETIME): Dấu thời gian khởi tạo (mặc định GETDATE()).
+- ModifiedBy (VARCHAR(50)): Mã người dùng cập nhật cuối cùng.
+- ModifiedOn (DATETIME): Dấu thời gian cập nhật cuối cùng.
+- IsActive (BIT): Trạng thái hoạt động (1 = Active, 0 = Inactive).
+- IsDeleted (BIT): Cờ xóa mềm (0 = Normal, 1 = Soft Deleted).
+
+================================================================================
+
