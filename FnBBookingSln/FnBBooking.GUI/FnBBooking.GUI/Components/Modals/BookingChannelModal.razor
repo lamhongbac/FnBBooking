@@ -73,49 +73,48 @@
 @code {
     private bool _isOpen;
 
-    [Parameter]
     public BookingChannelViewModel Model { get; set; } = new();
 
-    [Parameter]
-    public bool IsEditMode { get; set; }
+    public bool IsEditMode => Model.Id > 0;
 
     [Parameter]
-    public EventCallback<BookingChannelViewModel> OnSave { get; set; }
+    public EventCallback<BookingChannelViewModel> OnSaved { get; set; }
 
     [Parameter]
-    public EventCallback OnClose { get; set; }
+    public EventCallback OnClosed { get; set; }
 
-    public void Open(BookingChannelViewModel? model = null)
+    private string CurrentLoginId => Configuration["AppConfig:CurrentLoginId"] ?? "admin";
+
+    public void ShowCreate()
     {
-        if (model != null)
+        Model = new BookingChannelViewModel
         {
-            Model = new BookingChannelViewModel
-            {
-                Id = model.Id,
-                Number = model.Number,
-                Name = model.Name,
-                Description = model.Description,
-                IsActive = model.IsActive,
-                IsDeleted = model.IsDeleted,
-                CreatedOn = model.CreatedOn,
-                CreatedBy = model.CreatedBy,
-                ModifiedOn = model.ModifiedOn,
-                ModifiedBy = model.ModifiedBy
-            };
-            IsEditMode = true;
-        }
-        else
-        {
-            Model = new BookingChannelViewModel
-            {
-                Id = Guid.NewGuid().ToString(),
-                IsActive = true,
-                CreatedOn = DateTime.Now,
-                CreatedBy = Configuration["AppConfig:CurrentLoginId"] ?? "admin"
-            };
-            IsEditMode = false;
-        }
+            Id = 0,
+            IsActive = true,
+            CreatedBy = CurrentLoginId,
+            ModifiedBy = CurrentLoginId,
+            CreatedOn = DateTime.Now,
+            ModifiedOn = DateTime.Now
+        };
+        _isOpen = true;
+        StateHasChanged();
+    }
 
+    public void ShowEdit(BookingChannelViewModel item)
+    {
+        Model = new BookingChannelViewModel
+        {
+            Id = item.Id,
+            Number = item.Number,
+            Name = item.Name,
+            Description = item.Description,
+            IsActive = item.IsActive,
+            IsDeleted = item.IsDeleted,
+            CreatedOn = item.CreatedOn,
+            CreatedBy = item.CreatedBy,
+            ModifiedOn = DateTime.Now,
+            ModifiedBy = CurrentLoginId
+        };
         _isOpen = true;
         StateHasChanged();
     }
@@ -123,26 +122,25 @@
     public void Close()
     {
         _isOpen = false;
-        OnClose.InvokeAsync();
+        OnClosed.InvokeAsync();
         StateHasChanged();
     }
 
     private async Task HandleValidSubmit()
     {
-        string currentUserId = Configuration["AppConfig:CurrentLoginId"] ?? "admin";
-        if (IsEditMode)
+        Model.Number = Model.Number?.Trim() ?? string.Empty;
+        Model.Name = Model.Name?.Trim() ?? string.Empty;
+        Model.Description = Model.Description?.Trim();
+        Model.ModifiedBy = CurrentLoginId;
+        Model.ModifiedOn = DateTime.Now;
+
+        if (Model.Id == 0)
         {
-            Model.ModifiedOn = DateTime.Now;
-            Model.ModifiedBy = currentUserId;
-        }
-        else
-        {
+            Model.CreatedBy = CurrentLoginId;
             Model.CreatedOn = DateTime.Now;
-            Model.CreatedBy = currentUserId;
         }
 
-        await OnSave.InvokeAsync(Model);
-        Close();
+        _isOpen = false;
+        await OnSaved.InvokeAsync(Model);
     }
 }
-

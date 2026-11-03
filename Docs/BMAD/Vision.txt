@@ -1,0 +1,28 @@
+# Tầm nhìn Ứng dụng  
+## 1. Mục tiêu (Objectives) Ứng dụng 
+ đóng vai trò là một ứng dụng quản trị & phân tích dữ liệu quan trọng 
+ trong hệ thống quản lý booking của nhà hàng. 
+
+Mục tiêu chính là 
+ Tổ chức lưu trữ 3 loại thông tin trong 3 loại sổ
+ +Sổ lưu trữ thông tin booking
+ +Sổ lưu trữ thông tin sử dụng dịch vụ
+ +Sổ quản lý thanh toán hoa hồng
+ 
+ Các báo cáo phân tích hiệu quả về việc tổ chức , sử dụng thông qua các thống kê giao dịch thực tế.
+ Quản lý sát và Quản trị rủi ro hiệu quả
+ Tăng cường hiệu quả hoạt động
+ 
+ ## 2. Lợi ích (Benefits) -
+**Các bộ phận vận hành**: 
+	Cung cấp công cụ nhập liệu 1 cách chuẩn xác, hạn chế thao tác thủ công, 
+	tránh sai sót dữ liệu. - 
+ **Các bộ phận kiểm soát**:
+	Cung cấp công cụ liên kết các nguồn dữ liệu ,nhằm đảm bảo tính minh bạch 
+	Giảm thiểu sai sót, cũng như tăng tốc phản hồi,  đối soát chính xác
+ **Cho BOD (Ban giám đốc)**: 
+	Nhận được báo cáo nhanh chóng). 
+	Từ đó, giúp BOD nhanh chóng đưa ra các quyết định kinh doanh cốt lõi: 
+ ## 3. Định hướng phát triển Ứng dụng được thiết kế dưới dạng nền tảng tập trung (Centralized Web Application),
+ cho phép mở rộng nhanh chóng trong tương lai như kết hợp với các ứng dụng khác. 
+ Là nguồn data cho AI phân tích và tăng cường hiệu quả phân tích
