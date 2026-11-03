@@ -1,0 +1,13 @@
+1 số Data do tính chất đơn giản và ít thay đổi được tổ chức dưới dạng json
+và loadlên memory khi Applicatio start , phục vụ như data source cho các giao diên
+vì jsondata này có thể dùng cho nhiều hình thức ứng dụng nên nó được lưu vào 1 dự án trung gian
+nơi này dùng như là 1 cổng lưu trữ json data cho các dự án web, mobile, desktop... 
+
+Thí dụ: BankInfo  là data được lưu xuống đĩa cứng server dưới dạng json 
+thông qua FnBBooking.API 
+
+FnBBooking.Shared là nơi chứa các model (kg phải viewmodel) dùng chung giữa api và tầng BLL
+dự án shared dùng để hiện thực nguyên lý DRY 
+Mô hình
+GUI->API-> BLL->JDAL->Json Storage
+ 

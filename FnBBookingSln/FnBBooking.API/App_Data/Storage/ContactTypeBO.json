@@ -1,0 +1,58 @@
+[
+  {
+    "Number": "Individual",
+    "Description": "C\u00E1 nh\u00E2n / cty book cho c\u00E1 nh\u00E2n, kh\u00F4ng c\u00F3 hoa h\u1ED3ng",
+    "HaveCommision": false,
+    "CommissionRate1": 0,
+    "CommissionRate2": 0,
+    "IsActive": true
+  },
+  {
+    "Number": "HotelResort",
+    "Description": "C\u00E1 nh\u00E2n l\u00E0m trong kh\u00E1ch s\u1EA1n, resort KD  d\u1EF1a tr\u00EAn kh\u00E1ch h\u00E0ng c\u1EE7a t\u1ED5 ch\u1EE9c (gi\u1EDBi thi\u1EC7u/book kh\u00E1ch \u0111\u1EBFn d\u00F9ng b\u1EEFa t\u1EA1i MDL)",
+    "HaveCommision": true,
+    "CommissionRate1": 15,
+    "CommissionRate2": 10,
+    "IsActive": true
+  },
+  {
+    "Number": "TourGuide",
+    "Description": "HDV c\u00E1 nh\u00E2n kinh doanh du l\u1ECBch",
+    "HaveCommision": true,
+    "CommissionRate1": 15,
+    "CommissionRate2": 10,
+    "IsActive": true
+  },
+  {
+    "Number": "TravelAgency",
+    "Description": "L\u1EEF h\u00E0nh: cty kinh doanh du l\u1ECBch c\u00F3 gi\u1EA5y ph\u00E9p, c\u00F3 hoa h\u1ED3ng",
+    "HaveCommision": true,
+    "CommissionRate1": 15,
+    "CommissionRate2": 10,
+    "IsActive": true
+  },
+  {
+    "Number": "TGO",
+    "Description": "TourGuideOrganization -- Cty du l\u1ECBch kd d\u1EF1a tr\u00EAn kh\u00E1ch h\u00E0ng c\u1EE7a HDV, c\u00F3 hoa h\u1ED3ng--",
+    "HaveCommision": true,
+    "CommissionRate1": 15,
+    "CommissionRate2": 10,
+    "IsActive": true
+  },
+  {
+    "Number": "KOL_KOC",
+    "Description": "C\u00E1c \u0111\u1ED1i t\u01B0\u1EE3ng \u0111\u01B0\u1EE3c m\u1EDDi",
+    "HaveCommision": false,
+    "CommissionRate1": 0,
+    "CommissionRate2": 0,
+    "IsActive": true
+  },
+  {
+    "Number": "Other",
+    "Description": "Kh\u00E1c",
+    "HaveCommision": false,
+    "CommissionRate1": 0,
+    "CommissionRate2": 0,
+    "IsActive": true
+  }
+]

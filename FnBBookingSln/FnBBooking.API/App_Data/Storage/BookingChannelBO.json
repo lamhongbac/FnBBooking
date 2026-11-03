@@ -1,0 +1,56 @@
+[
+  {
+    "Number": "Mobile",
+    "Name": "Mobile",
+    "Description": "\u0110\u1EB7t qua \u0111i\u1EC7n tho\u1EA1i / di \u0111\u1ED9ng",
+    "IsActive": true
+  },
+  {
+    "Number": "Email",
+    "Name": "Email",
+    "Description": "\u0110\u1EB7t qua email",
+    "IsActive": true
+  },
+  {
+    "Number": "Facebook",
+    "Name": "Facebook",
+    "Description": "\u0110\u1EB7t qua m\u1EA1ng x\u00E3 h\u1ED9i Facebook",
+    "IsActive": true
+  },
+  {
+    "Number": "Zalo",
+    "Name": "Zalo",
+    "Description": "\u0110\u1EB7t qua Zalo",
+    "IsActive": true
+  },
+  {
+    "Number": "Instagram",
+    "Name": "Instagram",
+    "Description": "\u0110\u1EB7t qua m\u1EA1ng x\u00E3 h\u1ED9i Instagram",
+    "IsActive": true
+  },
+  {
+    "Number": "Website",
+    "Name": "Website",
+    "Description": "\u0110\u1EB7t qua website ch\u00EDnh th\u1EE9c",
+    "IsActive": true
+  },
+  {
+    "Number": "Google",
+    "Name": "Google",
+    "Description": "\u0110\u1EB7t qua Google (Maps, Search)",
+    "IsActive": true
+  },
+  {
+    "Number": "Tiktok",
+    "Name": "Tiktok",
+    "Description": "\u0110\u1EB7t qua m\u1EA1ng x\u00E3 h\u1ED9i Tiktok",
+    "IsActive": true
+  },
+  {
+    "Number": "KakaoTalk",
+    "Name": "Kakao Talk",
+    "Description": "",
+    "IsActive": true
+  }
+]

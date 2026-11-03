@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36603.0 d17.14
+VisualStudioVersion = 17.14.36603.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FnBBooking.GUI", "FnBBooking.GUI\FnBBooking.GUI\FnBBooking.GUI.csproj", "{59EC099F-8B95-4C32-A1CF-B9C143DD4B03}"
 EndProject
@@ -10,6 +10,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FnBBooking.DAL", "FnBBooking.DAL\FnBBooking.DAL.csproj", "{E92352EB-24AB-4574-B160-85BC5089F28D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FnBBooking.BLL", "FnBBooking.BLL\FnBBooking.BLL.csproj", "{A6DF3334-8392-4035-B83D-B318B7E0399C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FnBBooking.API", "FnBBooking.API\FnBBooking.API.csproj", "{305D3CE5-A4EF-4F98-BFBA-C145E1081ADC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FnBBooking.Shared", "FnBBooking.Shared\FnBBooking.Shared.csproj", "{30ED76BB-A40D-4605-8326-4256CC6FCF7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{A6DF3334-8392-4035-B83D-B318B7E0399C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6DF3334-8392-4035-B83D-B318B7E0399C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6DF3334-8392-4035-B83D-B318B7E0399C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{305D3CE5-A4EF-4F98-BFBA-C145E1081ADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{305D3CE5-A4EF-4F98-BFBA-C145E1081ADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{305D3CE5-A4EF-4F98-BFBA-C145E1081ADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{305D3CE5-A4EF-4F98-BFBA-C145E1081ADC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30ED76BB-A40D-4605-8326-4256CC6FCF7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30ED76BB-A40D-4605-8326-4256CC6FCF7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30ED76BB-A40D-4605-8326-4256CC6FCF7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30ED76BB-A40D-4605-8326-4256CC6FCF7D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

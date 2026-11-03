@@ -1,0 +1,20 @@
+[
+  {
+    "Number": "Cash",
+    "Name": "Tiền mặt",
+    "Description": "Đặt cọc bằng tiền mặt",
+    "IsActive": true
+  },
+  {
+    "Number": "Transfer",
+    "Name": "Chuyển khoản",
+    "Description": "Đặt cọc qua chuyển khoản ngân hàng",
+    "IsActive": true
+  },
+  {
+    "Number": "Visa",
+    "Name": "Visa",
+    "Description": "Đặt cọc bằng thẻ Visa/Mastercard",
+    "IsActive": true
+  }
+]
