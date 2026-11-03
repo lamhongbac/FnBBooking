@@ -1,4 +1,5 @@
 using FnBBooking.GUI.Components;
+using FnBBooking.GUI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+// Register Scoped Page State Registry Service to preserve filter/paging/sorting across navigations
+builder.Services.AddScoped<IPageStateRegistryService, PageStateRegistryService>();
 
 var app = builder.Build();
 

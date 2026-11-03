@@ -1,4 +1,5 @@
 @page "/bank-info-manager"
+@inject IPageStateRegistryService PageStateRegistry
 
 <PageTitle>Quản Lý Tài Khoản Ngân Hàng - FnBBooking</PageTitle>
 
@@ -253,6 +254,7 @@
 <!-- [ Delete Confirmation Modal ] end -->
 
 @code {
+    private const string PageKey = "BankInfoManager";
     private BankInfoModal? bankInfoModal;
     private List<BankInfoViewModel> allItems = new();
     private PageBankInfoController? pageController;
@@ -267,6 +269,15 @@
     {
         allItems = BankInfoViewModel.CreateSampleList();
 
+        // 1. Khôi phục state đã lưu (nếu có)
+        var savedState = PageStateRegistry.GetOrCreateState(PageKey);
+        if (savedState.IsInitialized)
+        {
+            searchTerm = savedState.SearchKeyword;
+            selectedStatus = savedState.SelectedStatus;
+            pageSize = savedState.PageSize;
+        }
+
         var sortModel = new SortModel();
         sortModel.AddColumn("Number", isDefaultColumn: true);
         sortModel.AddColumn("BankName");
@@ -275,13 +286,33 @@
         sortModel.AddColumn("Name");
         sortModel.AddColumn("ModifiedOn");
 
+        if (savedState.IsInitialized && !string.IsNullOrEmpty(savedState.SortedProperty))
+        {
+            sortModel.SortedProperty = savedState.SortedProperty;
+            sortModel.SortedOrder = savedState.SortedOrder;
+        }
+
         var filterDict = new Dictionary<string, object>
         {
             { FilterKey.SearchKeyword, searchTerm },
             { FilterKey.Status, selectedStatus }
         };
 
-        pageController = new PageBankInfoController(allItems, sortModel, filterDict, 1, pageSize);
+        int targetPage = savedState.IsInitialized ? savedState.CurrentPage : 1;
+        pageController = new PageBankInfoController(allItems, sortModel, filterDict, targetPage, pageSize);
+    }
+
+    private void SaveCurrentPageState()
+    {
+        if (pageController == null) return;
+        var state = PageStateRegistry.GetOrCreateState(PageKey);
+        state.SearchKeyword = searchTerm;
+        state.SelectedStatus = selectedStatus;
+        state.CurrentPage = pageController.PagingInfo.CurrentPage;
+        state.PageSize = pageController.PagingInfo.PageSize;
+        state.SortedProperty = pageController.PageSortModel.SortedProperty;
+        state.SortedOrder = pageController.PageSortModel.SortedOrder;
+        PageStateRegistry.SetState(PageKey, state);
     }
 
     private void HandleKeyUp(KeyboardEventArgs e)
@@ -299,6 +330,7 @@
         pageController.FilterObject[FilterKey.Status] = selectedStatus;
         pageController.Filter();
         pageController.SetupPage(1);
+        SaveCurrentPageState();
     }
 
     private void ClearSearch()
@@ -313,6 +345,7 @@
         pageController.PageSortModel.ApplySort(prop);
         pageController.DoSort();
         pageController.SetupPage(pageController.PagingInfo.CurrentPage);
+        SaveCurrentPageState();
     }
 
     private string GetSortIcon(string prop)
@@ -331,12 +364,14 @@
     private void HandlePageChange(int page)
     {
         pageController?.GoToPage(page);
+        SaveCurrentPageState();
     }
 
     private void HandlePageSizeChange(int newSize)
     {
         pageSize = newSize;
         pageController?.ChangePageSize(newSize);
+        SaveCurrentPageState();
     }
 
     private void HandleBankInfoSaved(BankInfoViewModel savedItem)
@@ -361,6 +396,7 @@
         {
             pageController.AllItems = allItems;
             pageController.RefreshPage();
+            SaveCurrentPageState();
         }
     }
 
@@ -381,6 +417,7 @@
             {
                 pageController.AllItems = allItems;
                 pageController.RefreshPage();
+                SaveCurrentPageState();
             }
         }
     }

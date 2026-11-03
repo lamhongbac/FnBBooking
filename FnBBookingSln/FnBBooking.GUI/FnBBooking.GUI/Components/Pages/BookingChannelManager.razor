@@ -1,4 +1,5 @@
 @page "/booking-channel-manager"
+@inject IPageStateRegistryService PageStateRegistry
 @using FnBBooking.GUI.Components.Common
 @using FnBBooking.GUI.Components.Modals
 @using FnBBooking.GUI.Controllers
@@ -18,7 +19,7 @@
                 <p class="text-muted mb-0">Quản lý danh mục các nguồn và kênh tiếp nhận đặt bàn của nhà hàng (Hotline, Website, Fanpage...).</p>
             </div>
             <div>
-                <button class="btn btn-primary" @onclick="() => bookingChannelModal?.Open()">
+                <button class="btn btn-primary" @onclick="() => bookingChannelModal?.ShowCreate()">
                     <i class="ti ti-plus me-1"></i> Thêm Kênh Mới
                 </button>
             </div>
@@ -76,7 +77,10 @@
             </div>
 
             <div class="col-md-2 text-md-end text-muted small">
-                Tổng: <strong class="text-dark">@(controller?.PagerModel.TotalRows ?? 0)</strong> kênh
+                @if (pageController != null)
+                {
+                    <span>Tổng: <strong>@pageController.PagingInfo.TotalItems</strong> kênh</span>
+                }
             </div>
         </div>
     </div>
@@ -84,111 +88,99 @@
 <!-- [ Filter & Search Toolbar ] end -->
 
 <!-- [ Data Table ] start -->
-<div class="card shadow-sm border-0">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th style="width: 60px;" class="text-center">STT</th>
-                    <th style="cursor: pointer; width: 160px;" @onclick='() => Sort("Number")'>
-                        Mã Kênh
-                        @if (sortModel.ColName == "Number")
-                        {
-                            <i class="ti @(sortModel.Order == SortOrder.Ascending ? "ti-arrow-up" : "ti-arrow-down") ms-1 text-primary"></i>
-                        }
-                    </th>
-                    <th style="cursor: pointer;" @onclick='() => Sort("Name")'>
-                        Tên Kênh Đặt Bàn
-                        @if (sortModel.ColName == "Name")
-                        {
-                            <i class="ti @(sortModel.Order == SortOrder.Ascending ? "ti-arrow-up" : "ti-arrow-down") ms-1 text-primary"></i>
-                        }
-                    </th>
-                    <th style="cursor: pointer;" @onclick='() => Sort("Description")'>
-                        Mô Tả
-                        @if (sortModel.ColName == "Description")
-                        {
-                            <i class="ti @(sortModel.Order == SortOrder.Ascending ? "ti-arrow-up" : "ti-arrow-down") ms-1 text-primary"></i>
-                        }
-                    </th>
-                    <th style="cursor: pointer; width: 140px;" class="text-center" @onclick='() => Sort("IsActive")'>
-                        Trạng Thái
-                        @if (sortModel.ColName == "IsActive")
-                        {
-                            <i class="ti @(sortModel.Order == SortOrder.Ascending ? "ti-arrow-up" : "ti-arrow-down") ms-1 text-primary"></i>
-                        }
-                    </th>
-                    <th style="width: 140px;" class="text-center">Thao Tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (controller == null || controller.CurrentPageItems.Count == 0)
-                {
+<div class="card tbl-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="bg-light">
                     <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <i class="ti ti-inbox fs-1 d-block mb-2 text-secondary"></i>
-                            Không tìm thấy dữ liệu kênh đặt bàn phù hợp.
-                        </td>
+                        <th style="width: 45px;" class="text-center">STT</th>
+                        <th style="cursor: pointer; width: 160px;" @onclick='() => SortBy("Number")'>
+                            MÃ KÊNH <i class="@GetSortIcon("Number")"></i>
+                        </th>
+                        <th style="cursor: pointer;" @onclick='() => SortBy("Name")'>
+                            TÊN KÊNH ĐẶT BÀN <i class="@GetSortIcon("Name")"></i>
+                        </th>
+                        <th style="cursor: pointer;" @onclick='() => SortBy("Description")'>
+                            MÔ TẢ <i class="@GetSortIcon("Description")"></i>
+                        </th>
+                        <th style="cursor: pointer; width: 140px;" class="text-center" @onclick='() => SortBy("IsActive")'>
+                            TRẠNG THÁI <i class="@GetSortIcon("IsActive")"></i>
+                        </th>
+                        <th style="width: 120px;" class="text-center">THAO TÁC</th>
                     </tr>
-                }
-                else
-                {
-                    int stt = (controller.PagerModel.PageIndex - 1) * controller.PagerModel.PageSize + 1;
-                    @foreach (var item in controller.CurrentPageItems)
+                </thead>
+                <tbody>
+                    @if (pageController == null || !pageController.CurrentPageData.Any())
                     {
                         <tr>
-                            <td class="text-center text-muted">@(stt++)</td>
-                            <td>
-                                <span class="badge bg-light-primary text-primary fw-semibold px-2 py-1">
-                                    @item.Number
-                                </span>
-                            </td>
-                            <td>
-                                <strong class="text-dark">@item.Name</strong>
-                            </td>
-                            <td>
-                                <span class="text-muted small">@item.Description</span>
-                            </td>
-                            <td class="text-center">
-                                @if (item.IsActive)
-                                {
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                        <i class="ti ti-circle-check me-1"></i> Đang hoạt động
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
-                                        <i class="ti ti-circle-x me-1"></i> Ngừng hoạt động
-                                    </span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary" title="Chỉnh sửa"
-                                            @onclick="() => bookingChannelModal?.Open(item)">
-                                        <i class="ti ti-edit"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger" title="Xóa"
-                                            @onclick="() => ConfirmDelete(item)">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
-                                </div>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="ti ti-inbox fs-1 d-block mb-2 text-secondary"></i>
+                                Không tìm thấy kênh đặt bàn phù hợp.
                             </td>
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
+                    else
+                    {
+                        var startIndex = (pageController.PagingInfo.CurrentPage - 1) * pageController.PagingInfo.PageSize;
+                        for (int i = 0; i < pageController.CurrentPageData.Count; i++)
+                        {
+                            var item = pageController.CurrentPageData[i];
+                            var stt = startIndex + i + 1;
+                            <tr>
+                                <td class="text-center text-muted">@stt</td>
+                                <td>
+                                    <span class="badge bg-light-primary text-primary fw-semibold px-2 py-1">
+                                        @item.Number
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong class="text-dark">@item.Name</strong>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">@item.Description</span>
+                                </td>
+                                <td class="text-center">
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                            <i class="ti ti-circle-check me-1"></i> Đang hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
+                                            <i class="ti ti-circle-x me-1"></i> Ngừng hoạt động
+                                        </span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" title="Chỉnh sửa"
+                                                @onclick="() => bookingChannelModal?.ShowEdit(item)">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="Xóa"
+                                                @onclick="() => ConfirmDelete(item)">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- [ Pagination Component ] start -->
-    @if (controller != null && controller.PagerModel.TotalRows > 0)
+    @if (pageController != null && pageController.PagingInfo.TotalPages > 0)
     {
-        <div class="card-footer bg-white border-top py-3">
-            <PaginationComponent Pager="@controller.PagerModel"
-                                 OnPageChanged="HandlePageChanged"
-                                 OnPageSizeChanged="HandlePageSizeChanged" />
+        <div class="card-footer bg-white border-top py-2">
+            <PaginationComponent Pager="@pageController.PagingInfo"
+                                 OnPageChanged="HandlePageChange"
+                                 OnPageSizeChanged="HandlePageSizeChange" />
         </div>
     }
     <!-- [ Pagination Component ] end -->
@@ -196,10 +188,10 @@
 <!-- [ Data Table ] end -->
 
 <!-- [ Modal Thêm / Chỉnh Sửa ] -->
-<BookingChannelModal @ref="bookingChannelModal" OnSave="HandleSave" />
+<BookingChannelModal @ref="bookingChannelModal" OnSaved="HandleSaved" />
 
 <!-- [ Confirm Delete Modal ] -->
-@if (itemToDelete != null)
+@if (deletingItem != null)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1056;" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
@@ -208,17 +200,17 @@
                     <h5 class="modal-title d-flex align-items-center">
                         <i class="ti ti-alert-triangle me-2 fs-4"></i> Xác Nhận Xóa
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" aria-label="Close" @onclick="() => itemToDelete = null"></button>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" @onclick="() => deletingItem = null"></button>
                 </div>
                 <div class="modal-body py-4">
                     <p class="mb-1">Bạn có chắc chắn muốn xóa kênh đặt bàn sau không?</p>
                     <div class="alert alert-light border mt-2 mb-0">
-                        <strong>@itemToDelete.Number</strong> - @itemToDelete.Name
+                        <strong>@deletingItem.Number</strong> - @deletingItem.Name
                     </div>
-                    <small class="text-danger d-block mt-2">Lưu ý: Dữ liệu bị xóa sẽ không thể phục hồi.</small>
+                    <small class="text-danger d-block mt-2">Dữ liệu sẽ được đánh dấu xóa mềm (IsDeleted = true).</small>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary px-3" @onclick="() => itemToDelete = null">Hủy</button>
+                    <button type="button" class="btn btn-secondary px-3" @onclick="() => deletingItem = null">Hủy</button>
                     <button type="button" class="btn btn-danger px-3" @onclick="ExecuteDelete">
                         <i class="ti ti-trash me-1"></i> Xóa Kênh
                     </button>
@@ -229,52 +221,70 @@
 }
 
 @code {
+    private const string PageKey = "BookingChannelManager";
     private BookingChannelModal? bookingChannelModal;
-    private PageBookingChannelController? controller;
     private List<BookingChannelViewModel> allItems = new();
-    private SortModel sortModel = new() { ColName = "Number", Order = SortOrder.Ascending };
-    private Dictionary<string, object> filterObject = new();
+    private PageBookingChannelController? pageController;
 
     private string searchTerm = string.Empty;
     private string selectedStatus = "All";
+    private int pageSize = 10;
     private string? alertMessage;
-    private BookingChannelViewModel? itemToDelete;
+    private BookingChannelViewModel? deletingItem;
 
     protected override void OnInitialized()
     {
-        LoadInitialData();
-        InitializeController();
-    }
-
-    private void LoadInitialData()
-    {
         allItems = new List<BookingChannelViewModel>
         {
-            new() { Id = "1", Number = "Direct", Name = "Trực tiếp", Description = "Khách đến trực tiếp nhà hàng", IsActive = true },
-            new() { Id = "2", Number = "Hotline", Name = "Hotline", Description = "Gọi điện qua tổng đài hotline", IsActive = true },
-            new() { Id = "3", Number = "Fanpage", Name = "Fanpage Facebook", Description = "Đặt bàn qua tin nhắn Facebook Madame Lân", IsActive = true },
-            new() { Id = "4", Number = "Website", Name = "Website", Description = "Đặt bàn trực tuyến qua website", IsActive = true },
-            new() { Id = "5", Number = "ZaloOA", Name = "Zalo Official", Description = "Đặt qua kênh Zalo Official Account", IsActive = true },
-            new() { Id = "6", Number = "TravelAgent", Name = "Công ty du lịch / Lữ hành", Description = "Kênh đối tác đại lý lữ hành", IsActive = true }
+            new() { Id = 1, Number = "Direct", Name = "Trực tiếp", Description = "Khách đến trực tiếp nhà hàng", IsActive = true },
+            new() { Id = 2, Number = "Hotline", Name = "Hotline", Description = "Gọi điện qua tổng đài hotline", IsActive = true },
+            new() { Id = 3, Number = "Fanpage", Name = "Fanpage Facebook", Description = "Đặt bàn qua tin nhắn Facebook Madame Lân", IsActive = true },
+            new() { Id = 4, Number = "Website", Name = "Website", Description = "Đặt bàn trực tuyến qua website", IsActive = true },
+            new() { Id = 5, Number = "ZaloOA", Name = "Zalo Official", Description = "Đặt qua kênh Zalo Official Account", IsActive = true },
+            new() { Id = 6, Number = "TravelAgent", Name = "Công ty du lịch / Lữ hành", Description = "Kênh đối tác đại lý lữ hành", IsActive = true }
         };
+
+        var savedState = PageStateRegistry.GetOrCreateState(PageKey);
+        if (savedState.IsInitialized)
+        {
+            searchTerm = savedState.SearchKeyword;
+            selectedStatus = savedState.SelectedStatus;
+            pageSize = savedState.PageSize;
+        }
+
+        var sortModel = new SortModel();
+        sortModel.AddColumn("Number", isDefaultColumn: true);
+        sortModel.AddColumn("Name");
+        sortModel.AddColumn("Description");
+        sortModel.AddColumn("IsActive");
+
+        if (savedState.IsInitialized && !string.IsNullOrEmpty(savedState.SortedProperty))
+        {
+            sortModel.SortedProperty = savedState.SortedProperty;
+            sortModel.SortedOrder = savedState.SortedOrder;
+        }
+
+        var filterDict = new Dictionary<string, object>
+        {
+            { FilterKey.SearchKeyword, searchTerm },
+            { FilterKey.Status, selectedStatus }
+        };
+
+        int targetPage = savedState.IsInitialized ? savedState.CurrentPage : 1;
+        pageController = new PageBookingChannelController(allItems, sortModel, filterDict, targetPage, pageSize);
     }
 
-    private void InitializeController()
+    private void SaveCurrentPageState()
     {
-        filterObject.Clear();
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-            filterObject[FilterKey.SearchKeyword] = searchTerm;
-
-        if (selectedStatus != "All")
-            filterObject[FilterKey.Status] = selectedStatus;
-
-        controller = new PageBookingChannelController(allItems, sortModel, filterObject, 1, 10);
-        controller.Filter();
-    }
-
-    private void DoSearch()
-    {
-        InitializeController();
+        if (pageController == null) return;
+        var state = PageStateRegistry.GetOrCreateState(PageKey);
+        state.SearchKeyword = searchTerm;
+        state.SelectedStatus = selectedStatus;
+        state.CurrentPage = pageController.PagingInfo.CurrentPage;
+        state.PageSize = pageController.PagingInfo.PageSize;
+        state.SortedProperty = pageController.PageSortModel.SortedProperty;
+        state.SortedOrder = pageController.PageSortModel.SortedOrder;
+        PageStateRegistry.SetState(PageKey, state);
     }
 
     private void HandleKeyUp(KeyboardEventArgs e)
@@ -285,82 +295,102 @@
         }
     }
 
+    private void DoSearch()
+    {
+        if (pageController == null) return;
+        pageController.FilterObject[FilterKey.SearchKeyword] = searchTerm;
+        pageController.FilterObject[FilterKey.Status] = selectedStatus;
+        pageController.Filter();
+        pageController.SetupPage(1);
+        SaveCurrentPageState();
+    }
+
     private void ClearSearch()
     {
         searchTerm = string.Empty;
         DoSearch();
     }
 
-    private void Sort(string colName)
+    private void SortBy(string prop)
     {
-        if (sortModel.ColName == colName)
+        if (pageController == null) return;
+        pageController.PageSortModel.ApplySort(prop);
+        pageController.DoSort();
+        pageController.SetupPage(pageController.PagingInfo.CurrentPage);
+        SaveCurrentPageState();
+    }
+
+    private string GetSortIcon(string prop)
+    {
+        if (pageController?.PageSortModel == null)
+            return "ti ti-arrows-sort text-muted ms-1";
+
+        if (!string.Equals(pageController.PageSortModel.SortedProperty, prop, StringComparison.OrdinalIgnoreCase))
+            return "ti ti-arrows-sort text-muted ms-1";
+
+        return pageController.PageSortModel.SortedOrder == SortOrder.Ascending
+            ? "ti ti-sort-ascending text-primary ms-1"
+            : "ti ti-sort-descending text-primary ms-1";
+    }
+
+    private void HandlePageChange(int page)
+    {
+        pageController?.GoToPage(page);
+        SaveCurrentPageState();
+    }
+
+    private void HandlePageSizeChange(int newSize)
+    {
+        pageSize = newSize;
+        pageController?.ChangePageSize(newSize);
+        SaveCurrentPageState();
+    }
+
+    private void HandleSaved(BookingChannelViewModel savedItem)
+    {
+        if (savedItem.Id == 0)
         {
-            sortModel.Order = sortModel.Order == SortOrder.Ascending ? SortOrder.Descending : SortOrder.Ascending;
+            savedItem.Id = allItems.Any() ? allItems.Max(b => b.Id) + 1 : 1;
+            allItems.Insert(0, savedItem);
+            alertMessage = $"Đã thêm mới kênh '{savedItem.Name}' thành công!";
         }
         else
         {
-            sortModel.ColName = colName;
-            sortModel.Order = SortOrder.Ascending;
-        }
-        controller?.Filter();
-    }
-
-    private void HandlePageChanged(int pageIndex)
-    {
-        if (controller != null)
-        {
-            controller.PagerModel.PageIndex = pageIndex;
-            controller.Filter();
-        }
-    }
-
-    private void HandlePageSizeChanged(int pageSize)
-    {
-        if (controller != null)
-        {
-            controller.PagerModel.PageSize = pageSize;
-            controller.PagerModel.PageIndex = 1;
-            controller.Filter();
-        }
-    }
-
-    private void HandleSave(BookingChannelViewModel model)
-    {
-        var existing = allItems.FirstOrDefault(x => x.Id == model.Id);
-        if (existing != null)
-        {
-            existing.Number = model.Number;
-            existing.Name = model.Name;
-            existing.Description = model.Description;
-            existing.IsActive = model.IsActive;
-            existing.ModifiedOn = model.ModifiedOn;
-            existing.ModifiedBy = model.ModifiedBy;
-            alertMessage = $"Đã cập nhật thành công kênh '{model.Name}'.";
-        }
-        else
-        {
-            allItems.Insert(0, model);
-            alertMessage = $"Đã thêm mới thành công kênh '{model.Name}'.";
+            var index = allItems.FindIndex(b => b.Id == savedItem.Id);
+            if (index >= 0)
+            {
+                allItems[index] = savedItem;
+                alertMessage = $"Đã cập nhật kênh '{savedItem.Name}' thành công!";
+            }
         }
 
-        controller?.Filter();
+        if (pageController != null)
+        {
+            pageController.AllItems = allItems;
+            pageController.RefreshPage();
+            SaveCurrentPageState();
+        }
     }
 
     private void ConfirmDelete(BookingChannelViewModel item)
     {
-        itemToDelete = item;
+        deletingItem = item;
     }
 
     private void ExecuteDelete()
     {
-        if (itemToDelete != null)
+        if (deletingItem != null)
         {
-            itemToDelete.IsDeleted = true;
-            allItems.Remove(itemToDelete);
-            alertMessage = $"Đã xóa kênh '{itemToDelete.Name}'.";
-            itemToDelete = null;
-            controller?.Filter();
+            deletingItem.IsDeleted = true;
+            alertMessage = $"Đã xóa kênh '{deletingItem.Name}' thành công!";
+            deletingItem = null;
+
+            if (pageController != null)
+            {
+                pageController.AllItems = allItems;
+                pageController.RefreshPage();
+                SaveCurrentPageState();
+            }
         }
     }
 }
-
