@@ -5,10 +5,12 @@ Chúng ta đang sử dụng AQUA MCP
 Tất cả các nghiệp vụ cần tuân thủ AQUA framework
 Các nguyên tắc cơ bản ở đây, chi tiết trong framework
 
-Bắt đầu bằng  ngày bằng lệnh INIT , tương đương loadworkingWorkSpace
+Bắt đầu bằng  ngày bằng lệnh INIT , tương đương loadworkingSpace
 Bắt đầu phiên làm việc bằng lệnh STATUS, báo cáo trạng thái hiện tài và trình kế hoặc tiếp theo
 Mỗi task luôn phải tồn tại trong dev plan, kết thúc task thông qua confirm
 Khi phat sinh CR-> ghi nhận task vào dev plan
 khi phat sinh BUG-> ghi nhân task vào child item của task trong dev plan
 Kết thúc task cần ghi nhận status  và lịch sử task
 Kết thúc cuối ngày bằng lệnh END , ghi nhận sổ làm việc cuối ngày
+
+Mã ứng dụng trong Aqua là: FNBBOOKING
